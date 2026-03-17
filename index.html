@@ -125,6 +125,38 @@
   @media (max-width: 768px) {
     .cards-grid { grid-template-columns: 1fr; }
     .header h1 { font-size: 24px; }
+    .summary-row { padding: 6px 0; }
+    .summary-name { font-size: 12px; }
+    .summary-usdt { font-size: 14px; }
+    .summary-rate { font-size: 9px; }
+    .summary-tag { font-size: 8px; padding: 2px 5px; }
+  }
+  
+  @media (max-width: 600px) {
+    body { font-size: 13px; }
+    .header h1 { font-size: 20px; }
+    .header-sub { font-size: 12px; }
+    .input-label { font-size: 13px; }
+    .twd-input { font-size: 16px; }
+    .preset-btn { font-size: 11px; padding: 6px 10px; }
+    .cards-grid { gap: 1rem; }
+    .summary { padding: 1rem; }
+    .summary-title { font-size: 10px; margin-bottom: 0.6rem; }
+    .summary-row { padding: 5px 0; gap: 4px; }
+    .summary-left { gap: 4px; }
+    .summary-name { font-size: 11px; }
+    .summary-usdt { font-size: 12px; }
+    .summary-rate { font-size: 8px; }
+    .summary-tag { font-size: 7px; padding: 1px 4px; }
+    .card-name { font-size: 14px; }
+    .card-pair { font-size: 10px; }
+    .card-rate-val { font-size: 18px; }
+    .result-usdt { font-size: 18px; }
+    
+    /* 排行榜改為單列 */
+    div[style*="grid-template-columns: 1fr 1fr"] {
+      grid-template-columns: 1fr !important;
+    }
   }
 </style>
 </head>
@@ -163,7 +195,7 @@
     </div>
   </div>
 
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.75rem;">
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.75rem; grid-auto-flow: row;">
     <div id="summary-usdt" class="summary" style="margin-bottom: 0;">
       <div class="summary-title">🥇 USDT 排行榜（費後淨額）</div>
       <div id="summaryRows-usdt"></div>
@@ -468,7 +500,7 @@
 </div>
 
 <script>
-const API_BASE = window.location.origin + '/api/rates'
+const API_BASE = 'http://127.0.0.1:5000/api/rates';
 
 const rates = { 
   max: { sell: null, usdc: null }, 
