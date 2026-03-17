@@ -139,4 +139,4 @@ if __name__ == "__main__":
     print("🚀 啟動 TWD 換 USDT/USDC 比較工具")
     print("📱 訪問: http://127.0.0.1:5000")
     print("💻 或在局域網: http://<你的IP>:5000")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=False)
