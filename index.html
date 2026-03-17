@@ -468,7 +468,7 @@
 </div>
 
 <script>
-const API_BASE = 'http://127.0.0.1:5000/api/rates';
+const API_BASE = window.location.origin + '/api/rates'
 
 const rates = { 
   max: { sell: null, usdc: null }, 
