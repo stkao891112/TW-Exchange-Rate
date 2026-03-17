@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TWD 換 USDT/USDC 比較工具</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f11;
+    --surface: #16181c;
+    --surface2: #1e2026;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #f0f1f3;
+    --muted: #6b7080;
+    --accent: #e8ff47;
+    --accent-dim: rgba(232,255,71,0.12);
+    --green: #3dffa0;
+    --red: #ff5f5f;
+    --font-mono: 'DM Mono', monospace;
+    --font-body: 'Noto Sans TC', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text); font-family: var(--font-body);
+    min-height: 100vh; padding: 2rem 1rem 4rem; position: relative; overflow-x: hidden;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(232,255,71,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(232,255,71,0.03) 1px, transparent 1px);
+    background-size: 48px 48px; pointer-events: none; z-index: 0;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+  .header { margin-bottom: 2.5rem; animation: fadeUp 0.5s ease both; }
+  .header-tag { font-family: var(--font-mono); font-size: 11px; color: var(--accent); letter-spacing: 0.12em; margin-bottom: 0.5rem; opacity: 0.8; }
+  .header h1 { font-size: clamp(24px, 4vw, 36px); font-weight: 300; letter-spacing: -0.02em; line-height: 1.2; }
+  .header h1 strong { font-weight: 500; color: var(--accent); }
+  .header-sub { margin-top: 0.5rem; font-size: 14px; color: var(--muted); font-weight: 300; }
+  .input-section { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.75rem; animation: fadeUp 0.5s 0.08s ease both; }
+  .input-label { font-size: 11px; font-family: var(--font-mono); color: var(--muted); letter-spacing: 0.1em; margin-bottom: 0.75rem; }
+  .input-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .input-wrapper { flex: 1; min-width: 200px; position: relative; }
+  .currency-badge { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--accent); pointer-events: none; user-select: none; }
+  .twd-input { width: 100%; background: var(--surface2); border: 1px solid var(--border2); border-radius: 10px; padding: 14px 16px 14px 52px; font-family: var(--font-mono); font-size: 22px; font-weight: 500; color: var(--text); outline: none; transition: border-color 0.2s; -moz-appearance: textfield; }
+  .twd-input::-webkit-inner-spin-button, .twd-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .twd-input:focus { border-color: var(--accent); }
+  .preset-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .preset-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .preset-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+  .refresh-row { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 8px; }
+  .update-time { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .update-time .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-right: 6px; animation: blink 2s ease-in-out infinite; }
+  .update-time .dot.loading { background: #f0a500; animation: blink 0.6s ease-in-out infinite; }
+  .update-time .dot.error { background: var(--red); animation: none; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .refresh-btn { background: transparent; border: 1px solid var(--border2); border-radius: 8px; padding: 7px 16px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s; }
+  .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .refresh-btn.spin .ricon { animation: spin 0.8s linear infinite; }
+  .ricon { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .section-title { font-size: 11px; font-family: var(--font-mono); color: var(--muted); letter-spacing: 0.1em; margin-bottom: 0.75rem; animation: fadeUp 0.5s 0.14s ease both; }
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; margin-bottom: 1.75rem; }
+  .ex-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; position: relative; overflow: visible; transition: border-color 0.2s, transform 0.15s; animation: fadeUp 0.5s ease both; }
+  .ex-card:hover { transform: translateY(-2px); border-color: var(--border2); }
+  .ex-card.best { border-color: var(--accent); background: linear-gradient(135deg, var(--surface) 60%, rgba(232,255,71,0.04)); }
+  .ex-card.best::after { content: 'BEST'; position: absolute; top: 12px; right: 12px; font-family: var(--font-mono); font-size: 9px; font-weight: 500; letter-spacing: 0.12em; color: var(--bg); background: var(--accent); padding: 3px 8px; border-radius: 4px; }
+  .card-header { margin-bottom: 0.9rem; }
+  .card-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .card-pair { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.06em; }
+  .card-rate-row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 0.8rem; }
+  .card-rate-label { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.06em; min-width: 38px; }
+  .card-rate-val { font-family: var(--font-mono); font-size: 18px; font-weight: 500; color: var(--text); }
+  .card-rate-unit { font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+  .fee-toggle-wrap { margin-bottom: 0.75rem; }
+  .fee-toggle { display: flex; gap: 4px; background: var(--surface2); border-radius: 8px; padding: 3px; width: 100%; }
+  .fee-btn { flex: 1; padding: 5px 0; font-family: var(--font-mono); font-size: 11px; color: var(--muted); background: transparent; border: 1px solid transparent; border-radius: 6px; cursor: pointer; transition: all 0.15s; text-align: center; white-space: nowrap; }
+  .fee-btn.active { background: var(--surface); color: var(--accent); border-color: rgba(232,255,71,0.3); }
+  .fee-btn:hover:not(.active) { color: var(--text); }
+  .fee-info { display: flex; align-items: center; justify-content: space-between; margin-top: 5px; }
+  .fee-label { font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+  .fee-val { font-family: var(--font-mono); font-size: 11px; color: var(--accent); }
+  .custom-fee-row { display: none; align-items: center; gap: 6px; margin-top: 6px; }
+  .custom-fee-row.show { display: flex; }
+  .custom-fee-input { flex: 1; background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; padding: 5px 10px; font-family: var(--font-mono); font-size: 12px; color: var(--text); outline: none; transition: border-color 0.15s; -moz-appearance: textfield; }
+  .custom-fee-input::-webkit-inner-spin-button, .custom-fee-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .custom-fee-input:focus { border-color: var(--accent); }
+  .custom-fee-pct { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .divider { height: 1px; background: var(--border); margin: 0.9rem 0; }
+  .result-label { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 4px; }
+  .result-usdt { font-family: var(--font-mono); font-size: 28px; font-weight: 500; color: var(--green); line-height: 1; }
+  .result-usdt.loading { color: var(--muted); font-size: 20px; }
+  .result-unit { font-family: var(--font-mono); font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .result-fee-note { font-family: var(--font-mono); font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .result-diff { font-family: var(--font-mono); font-size: 11px; margin-top: 6px; }
+  .result-diff.positive { color: var(--green); }
+  .result-diff.negative { color: var(--red); }
+  .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 0.9rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+  .card-status { font-family: var(--font-mono); font-size: 10px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+  .status-dot { width: 5px; height: 5px; border-radius: 50%; display: inline-block; }
+  .status-dot.live { background: var(--green); }
+  .status-dot.error { background: var(--red); }
+  .status-dot.searching { background: #f0a500; animation: blink 0.6s ease-in-out infinite; }
+  .skel { background: var(--surface2); border-radius: 4px; animation: shimmer 1.5s ease-in-out infinite; }
+  @keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:0.25} }
+  .skel-lg { height: 24px; width: 110px; }
+  .summary { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: none; animation: fadeUp 0.3s ease both; }
+  .summary.show { display: block; }
+  .summary-title { font-size: 11px; font-family: var(--font-mono); color: var(--muted); letter-spacing: 0.1em; margin-bottom: 0.9rem; }
+  .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-left { display: flex; align-items: center; gap: 8px; }
+  .summary-name { font-size: 13px; color: var(--text); }
+  .summary-tag { font-family: var(--font-mono); font-size: 9px; color: var(--muted); background: var(--surface2); padding: 3px 8px; border-radius: 4px; }
+  .summary-tag.bank { background: var(--accent-dim); color: var(--accent); font-weight: 500; border: 1px solid rgba(232,255,71,0.3); }
+  .summary-tag.exchange { background: rgba(61,255,160,0.12); color: var(--green); font-weight: 500; border: 1px solid rgba(61,255,160,0.3); }
+  .summary-right { text-align: right; }
+  .summary-usdt { font-family: var(--font-mono); font-size: 16px; font-weight: 500; color: var(--green); }
+  .summary-rate { font-family: var(--font-mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .note-box { background: var(--surface); border: 1px solid var(--border2); border-radius: 12px; padding: 1.25rem; margin-top: 2rem; font-size: 13px; line-height: 1.6; color: var(--text); animation: fadeUp 0.5s 0.3s ease both; }
+  .note-box strong { color: var(--accent); font-weight: 500; }
+  .note-box br { margin: 0.5rem 0; display: block; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 768px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="header">
+    <div class="header-tag">USDT/USDC EXCHANGE AGGREGATOR</div>
+    <h1><strong>TWD</strong> 換 <strong>USDT/USDC</strong> 比較</h1>
+    <p class="header-sub">實時匯率 · 手續費計算 · 最佳價格</p>
+  </div>
+
+  <div class="input-section">
+    <div class="input-label">💰 輸入台幣金額</div>
+    <div class="input-row">
+      <div class="input-wrapper">
+        <span class="currency-badge">TWD</span>
+        <input type="number" id="twdInput" class="twd-input" placeholder="輸入金額" value="10000">
+      </div>
+    </div>
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:1rem;">
+      <button class="preset-btn" onclick="setAmount(1000)">1,000</button>
+      <button class="preset-btn" onclick="setAmount(5000)">5,000</button>
+      <button class="preset-btn" onclick="setAmount(10000)">10,000</button>
+      <button class="preset-btn" onclick="setAmount(50000)">50,000</button>
+      <button class="preset-btn" onclick="setAmount(100000)">100,000</button>
+      <button class="preset-btn" onclick="setAmount(500000)">500,000</button>
+      <button class="preset-btn" onclick="setAmount(1000000)">1,000,000</button>
+    </div>
+    <div class="refresh-row">
+      <span class="update-time" id="updateTime"><span class="dot loading"></span>載入中...</span>
+      <button class="refresh-btn" id="refreshBtn" onclick="fetchAllRates()">
+        <span class="ricon">⟳</span>
+        <span>更新</span>
+      </button>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.75rem;">
+    <div id="summary-usdt" class="summary" style="margin-bottom: 0;">
+      <div class="summary-title">🥇 USDT 排行榜（費後淨額）</div>
+      <div id="summaryRows-usdt"></div>
+    </div>
+
+    <div id="summary-usdc" class="summary" style="margin-bottom: 0;">
+      <div class="summary-title">🥇 USDC 排行榜（費後淨額）</div>
+      <div id="summaryRows-usdc"></div>
+    </div>
+  </div>
+
+  <div class="section-title">📊 USDT 到價匯率</div>
+  <div class="cards-grid">
+    <div class="ex-card" id="card-max">
+      <div class="card-header">
+        <div class="card-name">MAX 交易所</div>
+        <div class="card-pair">USDT/TWD</div>
+      </div>
+      <div class="card-rate-row">
+        <span class="card-rate-label">匯率</span>
+        <span class="card-rate-val" id="max-rate">--</span>
+        <span class="card-rate-unit" id="max-rate-unit">TWD</span>
+        <div id="max-rate-skel" class="skel skel-lg" style="margin-left:auto;"></div>
+      </div>
+      <div class="fee-toggle-wrap">
+        <div class="fee-info">
+          <span class="fee-label">手續費</span>
+          <span class="fee-val" id="max-fee-display">0.50%</span>
+        </div>
+        <div class="fee-toggle">
+          <button class="fee-btn" id="max-btn-market" onclick="setFeeMode('max','market')">市價</button>
+          <button class="fee-btn active" id="max-btn-limit" onclick="setFeeMode('max','limit')">限價</button>
+          <button class="fee-btn" id="max-btn-custom" onclick="setFeeMode('max','custom')">自訂</button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="result-label">費後收到</div>
+      <div class="result-usdt loading" id="max-usdt">---</div>
+      <div class="result-unit">USDT</div>
+      <div class="result-fee-note" id="max-fee-note">手續費計算中...</div>
+      <div class="result-diff" id="max-diff"></div>
+      <div class="card-footer">
+        <span class="card-status">
+          <span class="status-dot searching" id="max-dot"></span>
+          <span id="max-status">載入中</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="ex-card" id="card-bitopro">
+      <div class="card-header">
+        <div class="card-name">BitoPro 幣託</div>
+        <div class="card-pair">USDT/TWD</div>
+      </div>
+      <div class="card-rate-row">
+        <span class="card-rate-label">匯率</span>
+        <span class="card-rate-val" id="bitopro-rate">--</span>
+        <span class="card-rate-unit" id="bitopro-rate-unit">TWD</span>
+        <div id="bitopro-rate-skel" class="skel skel-lg" style="margin-left:auto;"></div>
+      </div>
+      <div class="fee-toggle-wrap">
+        <div class="fee-info">
+          <span class="fee-label">手續費</span>
+          <span class="fee-val" id="bitopro-fee-display">0.50%</span>
+        </div>
+        <div class="fee-toggle">
+          <button class="fee-btn" id="bitopro-btn-market" onclick="setFeeMode('bitopro','market')">市價</button>
+          <button class="fee-btn active" id="bitopro-btn-limit" onclick="setFeeMode('bitopro','limit')">限價</button>
+          <button class="fee-btn" id="bitopro-btn-custom" onclick="setFeeMode('bitopro','custom')">自訂</button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="result-label">費後收到</div>
+      <div class="result-usdt loading" id="bitopro-usdt">---</div>
+      <div class="result-unit">USDT</div>
+      <div class="result-fee-note" id="bitopro-fee-note">手續費計算中...</div>
+      <div class="result-diff" id="bitopro-diff"></div>
+      <div class="card-footer">
+        <span class="card-status">
+          <span class="status-dot searching" id="bitopro-dot"></span>
+          <span id="bitopro-status">載入中</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="ex-card" id="card-hoya">
+      <div class="card-header">
+        <div class="card-name">HOYA BIT</div>
+        <div class="card-pair">USDT/TWD</div>
+      </div>
+      <div class="card-rate-row">
+        <span class="card-rate-label">匯率</span>
+        <span class="card-rate-val" id="hoya-rate">--</span>
+        <span class="card-rate-unit" id="hoya-rate-unit">TWD</span>
+        <div id="hoya-rate-skel" class="skel skel-lg" style="margin-left:auto;"></div>
+      </div>
+      <div class="fee-toggle-wrap">
+        <div class="fee-info">
+          <span class="fee-label">手續費</span>
+          <span class="fee-val" id="hoya-fee-display">0.00%</span>
+        </div>
+        <div class="fee-toggle">
+          <button class="fee-btn active" id="hoya-btn-zero" onclick="setFeeMode('hoya','zero')" disabled>閃兌無手續費</button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="result-label">費後收到</div>
+      <div class="result-usdt loading" id="hoya-usdt">---</div>
+      <div class="result-unit">USDT</div>
+      <div class="result-fee-note" id="hoya-fee-note">手續費計算中...</div>
+      <div class="result-diff" id="hoya-diff"></div>
+      <div class="card-footer">
+        <span class="card-status">
+          <span class="status-dot searching" id="hoya-dot"></span>
+          <span id="hoya-status">載入中</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">📊 USDC 到價匯率</div>
+  <div class="cards-grid">
+    <div class="ex-card" id="card-max-usdc">
+      <div class="card-header">
+        <div class="card-name">MAX 交易所</div>
+        <div class="card-pair">USDC/TWD</div>
+      </div>
+      <div class="card-rate-row">
+        <span class="card-rate-label">匯率</span>
+        <span class="card-rate-val" id="max-usdc-rate">--</span>
+        <span class="card-rate-unit" id="max-usdc-rate-unit">TWD</span>
+        <div id="max-usdc-rate-skel" class="skel skel-lg" style="margin-left:auto;"></div>
+      </div>
+      <div class="fee-toggle-wrap">
+        <div class="fee-info">
+          <span class="fee-label">手續費</span>
+          <span class="fee-val" id="max-usdc-fee-display">0.08%</span>
+        </div>
+        <div class="fee-toggle">
+          <button class="fee-btn" id="max-usdc-btn-market" onclick="setFeeMode('max-usdc','market')">市價</button>
+          <button class="fee-btn active" id="max-usdc-btn-limit" onclick="setFeeMode('max-usdc','limit')">限價</button>
+          <button class="fee-btn" id="max-usdc-btn-custom" onclick="setFeeMode('max-usdc','custom')">自訂</button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="result-label">費後收到</div>
+      <div class="result-usdt loading" id="max-usdc">---</div>
+      <div class="result-unit">USDC</div>
+      <div class="result-fee-note" id="max-usdc-fee-note">手續費計算中...</div>
+      <div class="result-diff" id="max-usdc-diff"></div>
+      <div class="card-footer">
+        <span class="card-status">
+          <span class="status-dot searching" id="max-usdc-dot"></span>
+          <span id="max-usdc-status">載入中</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="ex-card" id="card-bitopro-usdc">
+      <div class="card-header">
+        <div class="card-name">BitoPro 幣託</div>
+        <div class="card-pair">USDC/TWD</div>
+      </div>
+      <div class="card-rate-row">
+        <span class="card-rate-label">匯率</span>
+        <span class="card-rate-val" id="bitopro-usdc-rate">--</span>
+        <span class="card-rate-unit" id="bitopro-usdc-rate-unit">TWD</span>
+        <div id="bitopro-usdc-rate-skel" class="skel skel-lg" style="margin-left:auto;"></div>
+      </div>
+      <div class="fee-toggle-wrap">
+        <div class="fee-info">
+          <span class="fee-label">手續費</span>
+          <span class="fee-val" id="bitopro-usdc-fee-display">0.10%</span>
+        </div>
+        <div class="fee-toggle">
+          <button class="fee-btn" id="bitopro-usdc-btn-market" onclick="setFeeMode('bitopro-usdc','market')">市價</button>
+          <button class="fee-btn active" id="bitopro-usdc-btn-limit" onclick="setFeeMode('bitopro-usdc','limit')">限價</button>
+          <button class="fee-btn" id="bitopro-usdc-btn-custom" onclick="setFeeMode('bitopro-usdc','custom')">自訂</button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="result-label">費後收到</div>
+      <div class="result-usdt loading" id="bitopro-usdc">---</div>
+      <div class="result-unit">USDC</div>
+      <div class="result-fee-note" id="bitopro-usdc-fee-note">手續費計算中...</div>
+      <div class="result-diff" id="bitopro-usdc-diff"></div>
+      <div class="card-footer">
+        <span class="card-status">
+          <span class="status-dot searching" id="bitopro-usdc-dot"></span>
+          <span id="bitopro-usdc-status">載入中</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="ex-card" id="card-hoya-usdc">
+      <div class="card-header">
+        <div class="card-name">HOYA BIT</div>
+        <div class="card-pair">USDC/TWD</div>
+      </div>
+      <div class="card-rate-row">
+        <span class="card-rate-label">匯率</span>
+        <span class="card-rate-val" id="hoya-usdc-rate">--</span>
+        <span class="card-rate-unit" id="hoya-usdc-rate-unit">TWD</span>
+        <div id="hoya-usdc-rate-skel" class="skel skel-lg" style="margin-left:auto;"></div>
+      </div>
+      <div class="fee-toggle-wrap">
+        <div class="fee-info">
+          <span class="fee-label">手續費</span>
+          <span class="fee-val" id="hoya-usdc-fee-display">0.00%</span>
+        </div>
+        <div class="fee-toggle">
+          <button class="fee-btn active" id="hoya-usdc-btn-zero" onclick="setFeeMode('hoya-usdc','zero')" disabled>閃兌無手續費</button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="result-label">費後收到</div>
+      <div class="result-usdt loading" id="hoya-usdc">---</div>
+      <div class="result-unit">USDC</div>
+      <div class="result-fee-note" id="hoya-usdc-fee-note">手續費計算中...</div>
+      <div class="result-diff" id="hoya-usdc-diff"></div>
+      <div class="card-footer">
+        <span class="card-status">
+          <span class="status-dot searching" id="hoya-usdc-dot"></span>
+          <span id="hoya-usdc-status">載入中</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">🏦 USD 銀行匯率</div>
+  <div class="cards-grid">
+    <div class="ex-card" id="card-linebank">
+      <div class="card-header">
+        <div class="card-name">LINE Bank</div>
+        <div class="card-pair">USD/TWD</div>
+      </div>
+      <div class="card-rate-row">
+        <span class="card-rate-label">買入</span>
+        <span class="card-rate-val" id="linebank-rate">--</span>
+        <span class="card-rate-unit" id="linebank-rate-unit">TWD</span>
+        <div id="linebank-rate-skel" class="skel skel-lg" style="margin-left:auto;"></div>
+      </div>
+      
+      <div style="margin: 0.8rem 0; padding: 0.8rem; background: var(--surface2); border-radius: 8px;">
+        <div style="font-size: 10px; color: var(--muted); margin-bottom: 6px;">電匯費用</div>
+        <input type="number" id="linebank-fee-twd" class="custom-fee-input" placeholder="TWD費用" style="width: 100%; margin-bottom: 6px;" value="150" onchange="calcBank()">
+        <input type="number" id="linebank-fee-usd" class="custom-fee-input" placeholder="USD費用" style="width: 100%; margin-bottom: 6px;" onchange="calcBank()">
+        <div style="font-size: 9px; color: var(--muted);">輸入其中一項即可</div>
+      </div>
+      
+      <div class="divider"></div>
+      <div class="result-label">換得 USD</div>
+      <div class="result-usdt loading" id="linebank-usd">---</div>
+      <div class="result-unit">USD（扣除費用後）</div>
+      <div class="card-footer">
+        <span class="card-status">
+          <span class="status-dot searching" id="linebank-dot"></span>
+          <span id="linebank-status">載入中</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="ex-card" id="card-nextbank">
+      <div class="card-header">
+        <div class="card-name">NEXT Bank</div>
+        <div class="card-pair">USD/TWD</div>
+      </div>
+      <div class="card-rate-row">
+        <span class="card-rate-label">買入</span>
+        <span class="card-rate-val" id="nextbank-rate">--</span>
+        <span class="card-rate-unit" id="nextbank-rate-unit">TWD</span>
+        <div id="nextbank-rate-skel" class="skel skel-lg" style="margin-left:auto;"></div>
+      </div>
+      
+      <div style="margin: 0.8rem 0; padding: 0.8rem; background: var(--surface2); border-radius: 8px;">
+        <div style="font-size: 10px; color: var(--muted); margin-bottom: 6px;">電匯費用</div>
+        <input type="number" id="nextbank-fee-twd" class="custom-fee-input" placeholder="TWD費用" style="width: 100%; margin-bottom: 6px;" onchange="calcBank()">
+        <input type="number" id="nextbank-fee-usd" class="custom-fee-input" placeholder="USD費用" style="width: 100%; margin-bottom: 6px;" value="3" onchange="calcBank()">
+        <div style="font-size: 9px; color: var(--muted);">輸入其中一項即可</div>
+      </div>
+      
+      <div class="divider"></div>
+      <div class="result-label">換得 USD</div>
+      <div class="result-usdt loading" id="nextbank-usd">---</div>
+      <div class="result-unit">USD（扣除費用後）</div>
+      <div class="card-footer">
+        <span class="card-status">
+          <span class="status-dot searching" id="nextbank-dot"></span>
+          <span id="nextbank-status">載入中</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <strong>說明：</strong>匯率使用各平台最新成交價，即用台幣買入 USDT 的成本。<br>
+    <strong>限價</strong>單需掛單等待成交，<strong>市價</strong>單即時成交但費率較高。<strong>閃兌</strong>為零手續費快速交易。<br>
+    最終 USDT 數量 = 台幣 ÷ 賣出價 × (1 − 手續費率)。<br><br>
+    <strong>交易所費率：</strong>MAX 預設 0.08%（限價）、BitoPro 幣託預設 0.10%（限價）、HOYABIT 無手續費。<br>
+    <strong>銀行電匯：</strong>LINE Bank 電匯手續費 150 TWD、NEXT Bank 電匯手續費 3 USD。可直接電匯美金換成穩定幣與交易所直接台幣購買比較。
+  </div>
+</div>
+
+<script>
+const API_BASE = 'http://127.0.0.1:5000/api/rates';
+
+const rates = { 
+  max: { sell: null, usdc: null }, 
+  bitopro: { sell: null, usdc: null }, 
+  hoya: { sell: null, usdc: null },
+  linebank: null,
+  nextbank: null
+};
+
+const feeConfig = {
+  max: { mode: 'limit', market: 0.16, limit: 0.08, custom: 0.08 },
+  bitopro: { mode: 'limit', market: 0.20, limit: 0.10, custom: 0.10 },
+  hoya: { mode: 'zero', market: 0, limit: 0, custom: 0 },
+  'max-usdc': { mode: 'limit', market: 0.16, limit: 0.08, custom: 0.08 },
+  'bitopro-usdc': { mode: 'limit', market: 0.20, limit: 0.10, custom: 0.10 },
+  'hoya-usdc': { mode: 'zero', market: 0, limit: 0, custom: 0 }
+};
+
+function getFee(id) {
+  const c = feeConfig[id];
+  if (!c || c.mode === 'zero') return 0;
+  if (c.mode === 'custom') return c.custom;
+  return c[c.mode];
+}
+
+function setFeeMode(id, mode) {
+  feeConfig[id].mode = mode;
+  ['market','limit','custom'].forEach(m => {
+    const btn = document.getElementById(id + '-btn-' + m);
+    if (btn) btn.classList.toggle('active', m === mode);
+  });
+  updateFeeDisplay(id);
+  recalcCard(id);
+  updateBest(); updateSummary();
+}
+
+function updateFeeDisplay(id) {
+  const el = document.getElementById(id + '-fee-display');
+  if (el) el.textContent = getFee(id).toFixed(2) + '%';
+}
+
+function getTWD() { return parseFloat(document.getElementById('twdInput').value) || 0; }
+function setAmount(v) { document.getElementById('twdInput').value = v; recalcAll(); }
+function addAmount(v) { 
+  const current = getTWD();
+  document.getElementById('twdInput').value = current + v; 
+  recalcAll(); 
+}
+document.getElementById('twdInput').addEventListener('input', recalcAll);
+
+function updateBestUSDC() {
+  let bestId = null, bestVal = 0;
+  ['max-usdc','bitopro-usdc','hoya-usdc'].forEach(id => {
+    const v = getNetUSDC(id);
+    if (v && v > bestVal) { bestVal = v; bestId = id; }
+  });
+  ['max-usdc','bitopro-usdc','hoya-usdc'].forEach(id => {
+    const card = document.getElementById('card-' + id);
+    if (card) card.classList.toggle('best', id === bestId);
+    const diffEl = document.getElementById(id + '-diff');
+    if (!diffEl) return;
+    const v = getNetUSDC(id);
+    if (!v) { diffEl.textContent = ''; return; }
+    if (id === bestId) {
+      diffEl.textContent = '▲ 最優惠'; diffEl.className = 'result-diff positive';
+    } else {
+      const diff = v - bestVal;
+      diffEl.textContent = diff.toFixed(4) + ' USDC (' + ((diff/bestVal)*100).toFixed(2) + '%)';
+      diffEl.className = 'result-diff negative';
+    }
+  });
+}
+
+function getNetUSDC(id) {
+  const baseId = id.replace('-usdc', '');
+  const r = rates[baseId];
+  if (!r || !r.usdc) return null;
+  const fee = getFee(id);
+  return (getTWD() / r.usdc) * (1 - fee / 100);
+}
+
+function getNetUsdt(id) {
+  const r = rates[id];
+  if (!r || !r.sell) return null;
+  const fee = getFee(id);
+  return (getTWD() / r.sell) * (1 - fee / 100);
+}
+
+function recalcCard(id) {
+  const r = rates[id];
+  console.log(`recalcCard: id=${id}, rates[${id}]=`, r);
+  
+  if (!r || !r.sell) {
+    console.warn(`recalcCard: ${id} has no sell rate`, r);
+    return;
+  }
+  
+  const twd = getTWD();
+  const fee = getFee(id);
+  const gross = twd / r.sell;
+  const net = gross * (1 - fee / 100);
+  const feeAmt = gross - net;
+  
+  console.log(`recalcCard: ${id} - twd=${twd}, fee=${fee}, gross=${gross}, net=${net}`);
+  
+  const usdtEl = document.getElementById(id + '-usdt');
+  if (usdtEl) { 
+    usdtEl.textContent = net.toFixed(4); 
+    usdtEl.classList.remove('loading'); 
+    console.log(`Updated ${id}-usdt to ${net.toFixed(4)}`);
+  }
+  const noteEl = document.getElementById(id + '-fee-note');
+  if (noteEl) {
+    noteEl.textContent = fee > 0
+      ? '手續費 ' + feeAmt.toFixed(4) + ' USDT（' + fee.toFixed(2) + '%）'
+      : '閃兌無手續費 ✓';
+  }
+}
+
+function recalcAll() {
+  ['max','bitopro','hoya'].forEach(id => recalcCard(id));
+  calcUSDC();
+  calcBank();
+  updateBest(); updateBestUSDC(); updateSummary();
+}
+
+function calcUSDC() {
+  const twd = getTWD();
+  ['max-usdc','bitopro-usdc','hoya-usdc'].forEach(id => {
+    const baseId = id.replace('-usdc', '');
+    const r = rates[baseId];
+    if (!r || !r.usdc || twd <= 0) return;
+    
+    const fee = getFee(id);
+    const gross = twd / r.usdc;
+    const net = gross * (1 - fee / 100);
+    const feeAmt = gross - net;
+    
+    const usdcEl = document.getElementById(id);
+    if (usdcEl) { 
+      usdcEl.textContent = net.toFixed(4); 
+      usdcEl.classList.remove('loading'); 
+    }
+    
+    const noteEl = document.getElementById(id + '-fee-note');
+    if (noteEl) {
+      noteEl.textContent = fee > 0
+        ? '手續費 ' + feeAmt.toFixed(4) + ' USDC（' + fee.toFixed(2) + '%）'
+        : '閃兌無手續費 ✓';
+    }
+  });
+}
+
+function calcBank() {
+  const twd = getTWD();
+  ['linebank','nextbank'].forEach(id => {
+    const rate = rates[id];
+    if (!rate || twd <= 0) {
+      const el = document.getElementById(id + '-usd');
+      if (el) { el.textContent = '---'; el.classList.add('loading'); }
+      return;
+    }
+    
+    // 計算初始 USD
+    const usdGross = twd / rate;
+    
+    // 取得電匯費用
+    const feeTwd = parseFloat(document.getElementById(id + '-fee-twd').value) || 0;
+    const feeUsd = parseFloat(document.getElementById(id + '-fee-usd').value) || 0;
+    
+    // 如果輸入 TWD 費用，轉換為 USD；否則直接用 USD 費用
+    const totalFeeUsd = feeTwd > 0 ? feeTwd / rate : feeUsd;
+    
+    // 扣除費用後的 USD
+    const usdNet = usdGross - totalFeeUsd;
+    
+    const el = document.getElementById(id + '-usd');
+    if (el) { 
+      el.textContent = usdNet.toFixed(4); 
+      el.classList.remove('loading'); 
+    }
+  });
+}
+
+function updateBest() {
+  let bestId = null, bestVal = 0;
+  ['max','bitopro','hoya'].forEach(id => {
+    const v = getNetUsdt(id);
+    if (v && v > bestVal) { bestVal = v; bestId = id; }
+  });
+  ['max','bitopro','hoya'].forEach(id => {
+    const card = document.getElementById('card-' + id);
+    if (card) card.classList.toggle('best', id === bestId);
+    const diffEl = document.getElementById(id + '-diff');
+    if (!diffEl) return;
+    const v = getNetUsdt(id);
+    if (!v) { diffEl.textContent = ''; return; }
+    if (id === bestId) {
+      diffEl.textContent = '▲ 最優惠'; diffEl.className = 'result-diff positive';
+    } else {
+      const diff = v - bestVal;
+      diffEl.textContent = diff.toFixed(4) + ' USDT (' + ((diff/bestVal)*100).toFixed(2) + '%)';
+      diffEl.className = 'result-diff negative';
+    }
+  });
+}
+
+function updateSummary() {
+  if (!getTWD()) return;
+  const names = { max: 'MAX 交易所', bitopro: 'BitoPro 幣託', hoya: 'HOYA BIT', linebank: 'LINE Bank', nextbank: 'NEXT Bank' };
+  const modeLabel = { market: '市價', limit: '限價', custom: '自訂', zero: '閃兌' };
+  
+  // USDT 排行榜 (包含銀行)
+  const usdtEntries = ['max','bitopro','hoya']
+    .map(id => { const v = getNetUsdt(id); const r = rates[id]; return v ? { id, name: names[id], amount: v, sell: r.sell, fee: getFee(id), mode: feeConfig[id].mode, type: 'USDT', tag: '交易所' } : null; })
+    .filter(Boolean);
+  
+  // 加入銀行 USD（轉換為 USDT 價值用於排序）
+  ['linebank','nextbank'].forEach(id => {
+    const usdAmount = rates[id] ? (getTWD() / rates[id]) : 0;
+    const feeTwd = parseFloat(document.getElementById(id + '-fee-twd').value) || 0;
+    const feeUsd = parseFloat(document.getElementById(id + '-fee-usd').value) || 0;
+    const totalFeeUsd = feeTwd > 0 ? feeTwd / rates[id] : feeUsd;
+    const usdNet = usdAmount - totalFeeUsd;
+    if (rates[id] && usdNet > 0) {
+      usdtEntries.push({ id, name: names[id], amount: usdNet, sell: rates[id], fee: 0, mode: 'bank', type: 'USD', tag: '銀行' });
+    }
+  });
+  
+  usdtEntries.sort((a,b) => b.amount - a.amount);
+  
+  if (usdtEntries.length) {
+    document.getElementById('summary-usdt').classList.add('show');
+    const medals = ['🥇','🥈','🥉'];
+    document.getElementById('summaryRows-usdt').innerHTML = usdtEntries.map((e,i) => `
+      <div class="summary-row">
+        <div class="summary-left">
+          <span style="font-size:16px">${medals[i]||i+1}</span>
+          <span class="summary-name">${e.name}</span>
+          <span class="summary-tag ${e.tag === '銀行' ? 'bank' : 'exchange'}">${e.tag}</span>
+        </div>
+        <div class="summary-right">
+          <div class="summary-usdt">${e.amount.toFixed(4)} ${e.type}</div>
+          <div class="summary-rate">@ ${e.sell.toFixed(3)} TWD · 費後淨額</div>
+        </div>
+      </div>`).join('');
+  } else {
+    document.getElementById('summary-usdt').classList.remove('show');
+  }
+  
+  // USDC 排行榜 (包含銀行)
+  const usdcEntries = ['max','bitopro','hoya']
+    .map(id => { 
+      const r = rates[id];
+      if (!r || !r.usdc) return null;
+      const usdcId = id + '-usdc';
+      const fee = getFee(usdcId);
+      const usdcGross = getTWD() / r.usdc;
+      const usdcNet = usdcGross * (1 - fee / 100);
+      return { id, name: names[id], amount: usdcNet, sell: r.usdc, fee: fee, mode: feeConfig[usdcId].mode, type: 'USDC', tag: '交易所' };
+    })
+    .filter(Boolean);
+  
+  // 加入銀行 USD 到 USDC 排行榜
+  ['linebank','nextbank'].forEach(id => {
+    const usdAmount = rates[id] ? (getTWD() / rates[id]) : 0;
+    const feeTwd = parseFloat(document.getElementById(id + '-fee-twd').value) || 0;
+    const feeUsd = parseFloat(document.getElementById(id + '-fee-usd').value) || 0;
+    const totalFeeUsd = feeTwd > 0 ? feeTwd / rates[id] : feeUsd;
+    const usdNet = usdAmount - totalFeeUsd;
+    if (rates[id] && usdNet > 0) {
+      usdcEntries.push({ id, name: names[id], amount: usdNet, sell: rates[id], fee: 0, mode: 'bank', type: 'USD', tag: '銀行' });
+    }
+  });
+  
+  usdcEntries.sort((a,b) => b.amount - a.amount);
+  
+  if (usdcEntries.length) {
+    document.getElementById('summary-usdc').classList.add('show');
+    const medals = ['🥇','🥈','🥉'];
+    document.getElementById('summaryRows-usdc').innerHTML = usdcEntries.map((e,i) => `
+      <div class="summary-row">
+        <div class="summary-left">
+          <span style="font-size:16px">${medals[i]||i+1}</span>
+          <span class="summary-name">${e.name}</span>
+          <span class="summary-tag ${e.tag === '銀行' ? 'bank' : 'exchange'}">${e.tag}</span>
+        </div>
+        <div class="summary-right">
+          <div class="summary-usdt">${e.amount.toFixed(4)} ${e.type}</div>
+          <div class="summary-rate">@ ${e.sell.toFixed(3)} TWD · 費後淨額</div>
+        </div>
+      </div>`).join('');
+  } else {
+    document.getElementById('summary-usdc').classList.remove('show');
+  }
+}
+
+function showRate(id, sell) {
+  try {
+    const skelEl = document.getElementById(id+'-rate-skel');
+    const rateEl = document.getElementById(id+'-rate');
+    const unitEl = document.getElementById(id+'-rate-unit');
+    
+    console.log(`showRate called for ${id} with value ${sell}`, { skelEl, rateEl, unitEl });
+    
+    if (skelEl) skelEl.style.display = 'none';
+    if (rateEl) { 
+      rateEl.textContent = sell.toFixed(3); 
+      rateEl.style.display = '';
+      console.log(`Updated ${id}-rate to ${sell.toFixed(3)}`);
+    }
+    if (unitEl) unitEl.style.display = '';
+  } catch(e) {
+    console.error(`showRate error for ${id}:`, e);
+  }
+}
+
+function showStatus(id, ok) {
+  document.getElementById(id+'-dot').className = 'status-dot ' + (ok?'live':'error');
+  document.getElementById(id+'-status').textContent = ok ? '即時' : '無法取得';
+}
+
+function showError(id) {
+  try {
+    const skelEl = document.getElementById(id+'-rate-skel');
+    const rateEl = document.getElementById(id+'-rate');
+    const usdtEl = document.getElementById(id+'-usdt');
+    
+    if (skelEl) skelEl.style.display = 'none';
+    if (rateEl) { 
+      rateEl.textContent = '--'; 
+      rateEl.style.display = ''; 
+      rateEl.style.color = 'var(--muted)'; 
+      rateEl.style.fontSize = '14px';
+    }
+    if (usdtEl) { 
+      usdtEl.textContent = 'N/A'; 
+      usdtEl.classList.add('loading');
+    }
+    showStatus(id, false);
+  } catch(e) {
+    console.error(`showError error for ${id}:`, e);
+  }
+}
+
+function setUpdateTime(s) {
+  const el = document.getElementById('updateTime');
+  if (s==='loading') { el.innerHTML = '<span class="dot loading"></span>正在更新匯率...'; }
+  else if (s==='done') { const t = new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); el.innerHTML = `<span class="dot live"></span>最後更新 ${t}`; }
+  else { el.innerHTML = '<span class="dot error"></span>更新失敗'; }
+}
+
+async function fetchAllRates() {
+  document.getElementById('refreshBtn').classList.add('spin');
+  setUpdateTime('loading');
+  ['max','bitopro','hoya'].forEach(id => {
+    const s = document.getElementById(id+'-rate-skel'); if(s){s.style.display='';s.classList.add('skel');}
+    const v = document.getElementById(id+'-rate'); if(v) v.style.display='none';
+    const u2 = document.getElementById(id+'-rate-unit'); if(u2) u2.style.display='none';
+    const u = document.getElementById(id+'-usdt'); if(u){u.textContent='---';u.classList.add('loading');}
+    document.getElementById(id+'-dot').className = 'status-dot searching';
+    document.getElementById(id+'-status').textContent = '載入中';
+    document.getElementById(id+'-diff').textContent = '';
+    
+    const s2 = document.getElementById(id+'-usdc-rate-skel'); if(s2){s2.style.display='';s2.classList.add('skel');}
+    const v2 = document.getElementById(id+'-usdc-rate'); if(v2) v2.style.display='none';
+    const u3 = document.getElementById(id+'-usdc-rate-unit'); if(u3) u3.style.display='none';
+    const u4 = document.getElementById(id+'-usdc'); if(u4){u4.textContent='---';u4.classList.add('loading');}
+    document.getElementById(id+'-usdc-dot').className = 'status-dot searching';
+    document.getElementById(id+'-usdc-status').textContent = '載入中';
+  });
+  
+  ['linebank','nextbank'].forEach(id => {
+    const s = document.getElementById(id+'-rate-skel'); if(s){s.style.display='';s.classList.add('skel');}
+    const v = document.getElementById(id+'-rate'); if(v) v.style.display='none';
+    const u2 = document.getElementById(id+'-rate-unit'); if(u2) u2.style.display='none';
+    const u = document.getElementById(id+'-usd'); if(u){u.textContent='---';u.classList.add('loading');}
+    document.getElementById(id+'-dot').className = 'status-dot searching';
+    document.getElementById(id+'-status').textContent = '載入中';
+  });
+  
+  try {
+    const response = await fetch(API_BASE);
+    const data = await response.json();
+    console.log('✅ API 回應:', data);
+    
+    // 處理 USDT
+    if (data.USDT && Array.isArray(data.USDT)) {
+      console.log('處理 USDT 數據:', data.USDT);
+      data.USDT.forEach(item => {
+        if (item && item.provider === 'MAX') {
+          console.log('設置 MAX USDT:', item.rate);
+          rates.max.sell = item.rate;
+          showRate('max', item.rate);
+          showStatus('max', true);
+        } else if (item && item.provider === 'BitoPro') {
+          console.log('設置 BitoPro USDT:', item.rate);
+          rates.bitopro.sell = item.rate;
+          showRate('bitopro', item.rate);
+          showStatus('bitopro', true);
+        } else if (item && item.provider === 'HOYABIT') {
+          console.log('設置 HOYA USDT:', item.rate);
+          rates.hoya.sell = item.rate;
+          showRate('hoya', item.rate);
+          showStatus('hoya', true);
+        }
+      });
+    }
+    
+    // 處理 USDC
+    if (data.USDC && Array.isArray(data.USDC)) {
+      data.USDC.forEach(item => {
+        if (item && item.provider === 'MAX') {
+          rates.max.usdc = item.rate;
+          showRate('max-usdc', item.rate);
+          showStatus('max-usdc', true);
+        } else if (item && item.provider === 'BitoPro') {
+          rates.bitopro.usdc = item.rate;
+          showRate('bitopro-usdc', item.rate);
+          showStatus('bitopro-usdc', true);
+        } else if (item && item.provider === 'HOYABIT') {
+          rates.hoya.usdc = item.rate;
+          showRate('hoya-usdc', item.rate);
+          showStatus('hoya-usdc', true);
+        }
+      });
+    }
+    
+    // 處理 USD 銀行匯率
+    if (data.USD_BANK && Array.isArray(data.USD_BANK)) {
+      data.USD_BANK.forEach(item => {
+        if (item && item.provider === 'LINE Bank') {
+          rates.linebank = item.rate;
+          showRate('linebank', item.rate);
+          showStatus('linebank', true);
+        } else if (item && item.provider === 'NEXT Bank') {
+          rates.nextbank = item.rate;
+          showRate('nextbank', item.rate);
+          showStatus('nextbank', true);
+        }
+      });
+    }
+    
+    // 所有數據加載完成後再進行計算
+    recalcAll();
+    setUpdateTime('done');
+  } catch (error) {
+    console.error('❌ 取得匯率失敗:', error);
+    ['max','bitopro','hoya'].forEach(id => {
+      showError(id);
+      showError(id+'-usdc');
+    });
+    ['linebank','nextbank'].forEach(id => showError(id));
+    setUpdateTime('error');
+  } finally {
+    document.getElementById('refreshBtn').classList.remove('spin');
+  }
+}
+
+updateFeeDisplay('max'); updateFeeDisplay('bitopro'); updateFeeDisplay('hoya');
+updateFeeDisplay('max-usdc'); updateFeeDisplay('bitopro-usdc'); updateFeeDisplay('hoya-usdc');
+
+// 確保 DOM 已加載後再執行
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', fetchAllRates);
+} else {
+  fetchAllRates();
+}
+</script>
+</body>
+</html>
