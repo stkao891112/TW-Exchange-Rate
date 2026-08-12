@@ -47,8 +47,64 @@
   }
   body::before {
     content: ''; position: fixed; inset: 0;
-    background-image: linear-gradient(rgba(232,255,71,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(232,255,71,0.03) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(232,255,71,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(232,255,71,0.035) 1px, transparent 1px);
     background-size: 48px 48px; pointer-events: none; z-index: 0;
+    animation: gridMove 40s linear infinite;
+  }
+  @keyframes gridMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 48px 48px; }
+  }
+
+  /* 動態背景光暈 */
+  .bg-orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(95px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.65;
+    will-change: transform;
+  }
+  .orb-1 {
+    width: 480px;
+    height: 480px;
+    top: -120px;
+    left: -120px;
+    background: radial-gradient(circle, rgba(232, 255, 71, 0.12) 0%, rgba(232, 255, 71, 0) 70%);
+    animation: orbFloat1 22s ease-in-out infinite alternate;
+  }
+  .orb-2 {
+    width: 520px;
+    height: 520px;
+    bottom: -160px;
+    right: -120px;
+    background: radial-gradient(circle, rgba(61, 255, 160, 0.11) 0%, rgba(61, 255, 160, 0) 70%);
+    animation: orbFloat2 26s ease-in-out infinite alternate;
+  }
+  .orb-3 {
+    width: 420px;
+    height: 420px;
+    top: 40%;
+    left: 45%;
+    background: radial-gradient(circle, rgba(0, 229, 255, 0.08) 0%, rgba(0, 229, 255, 0) 70%);
+    animation: orbFloat3 30s ease-in-out infinite alternate;
+  }
+
+  @keyframes orbFloat1 {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(140px, 90px) scale(1.15); }
+    100% { transform: translate(-30px, 150px) scale(0.9); }
+  }
+  @keyframes orbFloat2 {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-120px, -140px) scale(1.2); }
+    100% { transform: translate(70px, -70px) scale(0.85); }
+  }
+  @keyframes orbFloat3 {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-30%, -35%) scale(1.25); }
+    100% { transform: translate(-65%, -65%) scale(0.9); }
   }
   .wrap { max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
   .header { margin-bottom: 2.5rem; animation: fadeUp 0.5s ease both; }
@@ -231,6 +287,11 @@
 </style>
 </head>
 <body>
+
+<!-- 動態背景光暈球 -->
+<div class="bg-orb orb-1"></div>
+<div class="bg-orb orb-2"></div>
+<div class="bg-orb orb-3"></div>
 
 <div class="wrap">
   <div class="header">
