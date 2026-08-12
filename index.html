@@ -524,7 +524,13 @@
     </div>
   </div>
 
-  <div class="section-title" id="bank-section-title">🏦 USD 銀行匯率</div>
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 0.75rem;">
+    <div class="section-title" id="bank-section-title" style="margin-bottom: 0;">🏦 USD 銀行匯率</div>
+    <div id="bank-region-toggle" style="display: flex; gap: 6px; background: var(--surface2); border-radius: 8px; padding: 3px; border: 1px solid var(--border2);">
+      <button class="fee-btn" id="btn-region-usa" onclick="switchBankRegion('usa')" style="padding: 4px 12px; font-size: 11px;">🇺🇸 匯至美國</button>
+      <button class="fee-btn active" id="btn-region-other" onclick="switchBankRegion('other')" style="padding: 4px 12px; font-size: 11px;">🌐 匯至其他國家</button>
+    </div>
+  </div>
   <div class="cards-grid">
     <div class="ex-card" id="card-linebank">
       <div class="card-header">
@@ -549,6 +555,7 @@
       <div class="result-label" id="linebank-result-label">換得 USD</div>
       <div class="result-usdt loading" id="linebank-usd">---</div>
       <div class="result-unit" id="linebank-result-unit">USD（扣除費用後）</div>
+      <div class="result-fee-note" id="linebank-fee-note"></div>
       <div class="card-footer">
         <span class="card-status">
           <span class="status-dot searching" id="linebank-dot"></span>
@@ -580,6 +587,7 @@
       <div class="result-label" id="nextbank-result-label">換得 USD</div>
       <div class="result-usdt loading" id="nextbank-usd">---</div>
       <div class="result-unit" id="nextbank-result-unit">USD（扣除費用後）</div>
+      <div class="result-fee-note" id="nextbank-fee-note"></div>
       <div class="card-footer">
         <span class="card-status">
           <span class="status-dot searching" id="nextbank-dot"></span>
@@ -612,6 +620,7 @@
       <div class="result-label" id="cubank-result-label">換得 USD</div>
       <div class="result-usdt loading" id="cubank-usd">---</div>
       <div class="result-unit" id="cubank-result-unit">USD（扣除費用後）</div>
+      <div class="result-fee-note" id="cubank-fee-note"></div>
       <div class="card-footer">
         <span class="card-status">
           <span class="status-dot searching" id="cubank-dot"></span>
@@ -644,6 +653,7 @@
       <div class="result-label" id="sinopac-result-label">換得 USD</div>
       <div class="result-usdt loading" id="sinopac-usd">---</div>
       <div class="result-unit" id="sinopac-result-unit">USD（扣除費用後）</div>
+      <div class="result-fee-note" id="sinopac-fee-note"></div>
       <div class="card-footer">
         <span class="card-status">
           <span class="status-dot searching" id="sinopac-dot"></span>
@@ -677,6 +687,7 @@
       <div class="result-label" id="richart-result-label">換得 USD</div>
       <div class="result-usdt loading" id="richart-usd">---</div>
       <div class="result-unit" id="richart-result-unit">USD（扣除費用後）</div>
+      <div class="result-fee-note" id="richart-fee-note"></div>
       <div class="card-footer">
         <span class="card-status">
           <span class="status-dot searching" id="richart-dot"></span>
@@ -706,8 +717,9 @@
           <a href="https://www.linebank.com.tw/wealth-investment/promotions/10" target="_blank" rel="noopener noreferrer" style="font-family: var(--font-mono); font-size: 11px; color: var(--accent); text-decoration: none; border: 1px solid rgba(232,255,71,0.3); padding: 3px 10px; border-radius: 6px; background: rgba(232,255,71,0.05); transition: all 0.2s;">官方優惠 ↗</a>
         </div>
         <div style="font-size: 13px; line-height: 1.7; color: var(--text);">
-          • <strong>匯出：</strong> 300 TWD<br>
-          • <strong>匯入：</strong> 50 TWD
+          • <strong>匯出至美國：</strong> 150 TWD<br>
+          • <strong>匯出至其他：</strong> 300 TWD<br>
+          • <strong>匯入費用：</strong> 50 TWD
         </div>
       </div>
 
@@ -717,8 +729,9 @@
           <a href="https://www.nextbank.com.tw" target="_blank" rel="noopener noreferrer" style="font-family: var(--font-mono); font-size: 11px; color: var(--accent); text-decoration: none; border: 1px solid rgba(232,255,71,0.3); padding: 3px 10px; border-radius: 6px; background: rgba(232,255,71,0.05); transition: all 0.2s;">官方優惠 ↗</a>
         </div>
         <div style="font-size: 13px; line-height: 1.7; color: var(--text);">
-          • <strong>匯出：</strong> 15 USD<br>
-          • <strong>匯入：</strong> 1 USD
+          • <strong>匯出至美國：</strong> 5 USD<br>
+          • <strong>匯出至其他：</strong> 15 USD<br>
+          • <strong>匯入費用：</strong> 1 USD
         </div>
       </div>
 
@@ -728,7 +741,7 @@
           <a href="https://www.cathaybk.com.tw" target="_blank" rel="noopener noreferrer" style="font-family: var(--font-mono); font-size: 11px; color: var(--accent); text-decoration: none; border: 1px solid rgba(232,255,71,0.3); padding: 3px 10px; border-radius: 6px; background: rgba(232,255,71,0.05); transition: all 0.2s;">官方匯率 ↗</a>
         </div>
         <div style="font-size: 13px; line-height: 1.7; color: var(--text);">
-          • <strong>匯出：</strong> 500 TWD<br>
+          • <strong>匯出：</strong> 500 TWD (美國/其他同價)<br>
           • <strong>匯入：</strong> 200 TWD
         </div>
       </div>
@@ -740,8 +753,9 @@
         </div>
         <div style="font-size: 11px; font-family: var(--font-mono); color: var(--muted); margin-bottom: 10px;">✨ 採用 DAWHO 大戶速匯優惠電匯價</div>
         <div style="font-size: 13px; line-height: 1.7; color: var(--text);">
-          • <strong>匯出手續費：</strong><span style="color: var(--accent);">130 TWD</span> <span style="font-size: 11px; color: var(--muted);">(TWD買入預設)</span><br>
-          • <strong>匯入手續費：</strong><span style="color: var(--green);">200 TWD</span> <span style="font-size: 11px; color: var(--muted);">(賣回TWD預設)</span>
+          • <strong>匯出至美國：</strong> 130 TWD<br>
+          • <strong>匯出至其他：</strong> 750 TWD<br>
+          • <strong>匯入手續費：</strong> 200 TWD
         </div>
       </div>
 
@@ -753,9 +767,9 @@
         </div>
         <div style="font-size: 11px; font-family: var(--font-mono); color: var(--muted); margin-bottom: 10px;">✨ 採用 Richart 讓分優惠匯率 (減碼3分)</div>
         <div style="font-size: 13px; line-height: 1.7; color: var(--text);">
-          • <strong>匯出至美國：</strong> 6 USD <span style="font-size: 11px; color: var(--muted);">(2026/1/1~9/30優惠)</span><br>
-          • <strong>匯出至其他國家：</strong><span style="color: var(--accent);">2.5%</span> <span style="font-size: 11px; color: var(--muted);">(TWD買入預設)</span><br>
-          • <strong>外幣收款費：</strong><span style="color: var(--green);">0.05%</span> <span style="font-size: 11px; color: var(--muted);">(最低 200 TWD / 最高 800 TWD，賣回TWD預設200 TWD)</span>
+          • <strong>匯出至美國：</strong> 6 USD <span style="font-size: 11px; color: var(--muted);">(定額優惠)</span><br>
+          • <strong>匯出至其他：</strong> 2.5% <span style="font-size: 11px; color: var(--muted);">(預設顯示扣費金額)</span><br>
+          • <strong>外幣收款費：</strong> 0.05% <span style="font-size: 11px; color: var(--muted);">(最低 200 TWD)</span>
         </div>
       </div>
     </div>
@@ -794,6 +808,60 @@ const feeConfig = {
   'hoya-usdc': { mode: 'zero', market: 0, limit: 0, custom: 0 }
 };
 
+// 當前地區預設：'other' = 匯至其他國家, 'usa' = 匯至美國
+let currentBankRegion = 'other';
+
+function switchBankRegion(region) {
+  currentBankRegion = region;
+  const usaBtn = document.getElementById('btn-region-usa'); if (usaBtn) usaBtn.classList.toggle('active', region === 'usa');
+  const otherBtn = document.getElementById('btn-region-other'); if (otherBtn) otherBtn.classList.toggle('active', region === 'other');
+  
+  if (currentMode === 'buy') {
+    applyBankPresets(region);
+  }
+}
+
+function applyBankPresets(region) {
+  if (region === 'usa') {
+    // 🇺🇸 美國模式
+    document.getElementById('linebank-fee-twd').value = '150';
+    document.getElementById('linebank-fee-usd').value = '';
+    
+    document.getElementById('nextbank-fee-twd').value = '';
+    document.getElementById('nextbank-fee-usd').value = '5';
+    
+    document.getElementById('cubank-fee-twd').value = '500';
+    document.getElementById('cubank-fee-usd').value = '';
+    
+    document.getElementById('sinopac-fee-twd').value = '130';
+    document.getElementById('sinopac-fee-usd').value = '';
+    
+    const rFeePct = document.getElementById('richart-fee-percent'); if (rFeePct) rFeePct.value = '';
+    const rFeeTwd = document.getElementById('richart-fee-twd'); if (rFeeTwd) rFeeTwd.value = '';
+    const rFeeUsd = document.getElementById('richart-fee-usd'); if (rFeeUsd) rFeeUsd.value = '6';
+  } else {
+    // 🌐 其他國家模式 (預設)
+    document.getElementById('linebank-fee-twd').value = '300';
+    document.getElementById('linebank-fee-usd').value = '';
+    
+    document.getElementById('nextbank-fee-twd').value = '';
+    document.getElementById('nextbank-fee-usd').value = '15';
+    
+    document.getElementById('cubank-fee-twd').value = '500';
+    document.getElementById('cubank-fee-usd').value = '';
+    
+    document.getElementById('sinopac-fee-twd').value = '750';
+    document.getElementById('sinopac-fee-usd').value = '';
+    
+    const rFeePct = document.getElementById('richart-fee-percent'); if (rFeePct) rFeePct.value = '2.5';
+    const rFeeTwd = document.getElementById('richart-fee-twd'); if (rFeeTwd) rFeeTwd.value = '';
+    const rFeeUsd = document.getElementById('richart-fee-usd'); if (rFeeUsd) rFeeUsd.value = '';
+  }
+  
+  calcBank();
+  updateSummary();
+}
+
 // 切換模式
 function switchMode(mode) {
   currentMode = mode;
@@ -802,20 +870,12 @@ function switchMode(mode) {
   document.getElementById('btn-buy-mode').classList.toggle('active', mode === 'buy');
   document.getElementById('btn-sell-mode').classList.toggle('active', mode === 'sell');
   
+  const regionToggle = document.getElementById('bank-region-toggle');
+  
   // 設定銀行預設電匯費用
   if (mode === 'buy') {
-    // 買入模式：匯出費用（LINE Bank 300 TWD，NEXT Bank 15 USD，CU BANK 500 TWD，SinoPac 130 TWD）
-    document.getElementById('linebank-fee-twd').value = '300';
-    document.getElementById('linebank-fee-usd').value = '';
-    document.getElementById('nextbank-fee-twd').value = '';
-    document.getElementById('nextbank-fee-usd').value = '15';
-    document.getElementById('cubank-fee-twd').value = '500';
-    document.getElementById('cubank-fee-usd').value = '';
-    document.getElementById('sinopac-fee-twd').value = '130';
-    document.getElementById('sinopac-fee-usd').value = '';
-    const rFeePct = document.getElementById('richart-fee-percent'); if (rFeePct) rFeePct.value = '2.5';
-    const rFeeTwd = document.getElementById('richart-fee-twd'); if (rFeeTwd) rFeeTwd.value = '';
-    const rFeeUsd = document.getElementById('richart-fee-usd'); if (rFeeUsd) rFeeUsd.value = '';
+    if (regionToggle) regionToggle.style.display = 'flex';
+    applyBankPresets(currentBankRegion);
 
     document.getElementById('mode-title').textContent = 'TWD';
     document.getElementById('mode-subtitle').textContent = '實時匯率 · 手續費計算 · 最佳價格';
@@ -832,6 +892,8 @@ function switchMode(mode) {
     // 更新卡片標題
     updateCardTitles('buy');
   } else {
+    if (regionToggle) regionToggle.style.display = 'none';
+    
     // 賣出模式：匯入費用（LINE Bank 50 TWD，NEXT Bank 1 USD，CU BANK 200 TWD，SinoPac 200 TWD）
     document.getElementById('linebank-fee-twd').value = '50';
     document.getElementById('linebank-fee-usd').value = '';
@@ -1118,6 +1180,8 @@ function calcBank() {
     if (!rateData || amount <= 0) {
       const el = document.getElementById(id + '-usd');
       if (el) { el.textContent = '---'; el.classList.add('loading'); }
+      const noteEl = document.getElementById(id + '-fee-note');
+      if (noteEl) noteEl.textContent = '';
       return;
     }
     
@@ -1125,6 +1189,8 @@ function calcBank() {
     if (!rate) {
       const el = document.getElementById(id + '-usd');
       if (el) { el.textContent = '---'; el.classList.add('loading'); }
+      const noteEl = document.getElementById(id + '-fee-note');
+      if (noteEl) noteEl.textContent = '';
       return;
     }
     
@@ -1138,7 +1204,7 @@ function calcBank() {
     const resUnitEl = document.getElementById(id + '-result-unit');
     if (resUnitEl) resUnitEl.textContent = currentMode === 'buy' ? 'USD（扣除費用後）' : 'TWD（扣除費用後）';
     
-    let result, feeNote;
+    let result, feeNote = '';
     const feeTwd = parseFloat(document.getElementById(id + '-fee-twd')?.value) || 0;
     const feeUsd = parseFloat(document.getElementById(id + '-fee-usd')?.value) || 0;
     const feePercent = parseFloat(document.getElementById(id + '-fee-percent')?.value) || 0;
@@ -1151,7 +1217,20 @@ function calcBank() {
       }
       const usdNet = usdGross - totalFeeUsd;
       result = usdNet;
-      feeNote = totalFeeUsd > 0 ? `電匯費後淨額` + (feePercent > 0 ? ` (扣 ${feePercent}%)` : '') : `免電匯手續費`;
+      
+      if (feePercent > 0) {
+        const pctFeeUsd = usdGross * (feePercent / 100);
+        const pctFeeTwd = pctFeeUsd * rate;
+        feeNote = `手續費 ${feePercent}%：${pctFeeUsd.toFixed(2)} USD（約 ${pctFeeTwd.toFixed(0)} TWD）`;
+      } else if (feeUsd > 0) {
+        const twdEquiv = feeUsd * rate;
+        feeNote = `電匯手續費：${feeUsd} USD（約 ${twdEquiv.toFixed(0)} TWD）`;
+      } else if (feeTwd > 0) {
+        const usdEquiv = feeTwd / rate;
+        feeNote = `電匯手續費：${feeTwd} TWD（約 ${usdEquiv.toFixed(2)} USD）`;
+      } else {
+        feeNote = `免電匯手續費 ✓`;
+      }
     } else {
       const twdGross = amount * rate;
       let totalFeeTwd = feeTwd + (feeUsd > 0 ? feeUsd * rate : 0);
@@ -1160,7 +1239,14 @@ function calcBank() {
       }
       const twdNet = twdGross - totalFeeTwd;
       result = twdNet;
-      feeNote = totalFeeTwd > 0 ? `扣除匯入手續費淨額` : `免電匯手續費`;
+      
+      if (feeTwd > 0) {
+        feeNote = `匯入手續費：${feeTwd} TWD`;
+      } else if (feeUsd > 0) {
+        feeNote = `匯入手續費：${feeUsd} USD`;
+      } else {
+        feeNote = `免匯入手續費 ✓`;
+      }
     }
     
     const el = document.getElementById(id + '-usd');
