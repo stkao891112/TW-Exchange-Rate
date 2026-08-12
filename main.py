@@ -72,8 +72,16 @@ def fetch_line_bank():
         data = requests.get(url, headers=HEADERS, timeout=5).json()
         rates = data['content']['exchangeRateList']
         usd_item = next(item for item in rates if item['currency'] == 'USD' and item['baseCurrency'] == 'TWD')
-        return {"usd": float(usd_item['sellExchangeRate']), "name": "LINE Bank"}
-    except: return None
+        # sellExchangeRate: 銀行賣美元給客戶（客戶用 TWD 買 USD）
+        # buyExchangeRate: 銀行向客戶買美元（客戶賣 USD 換 TWD）
+        return {
+            "sell": float(usd_item['sellExchangeRate']),  # 客戶買入美元匯率
+            "buy": float(usd_item.get('buyExchangeRate', usd_item['sellExchangeRate'])),  # 客戶賣出美元匯率
+            "name": "LINE Bank"
+        }
+    except Exception as e:
+        print(f"❌ LINE Bank 抓取失敗：{e}")
+        return None
 
 def fetch_next_bank():
     url = "https://api.nextbank.com.tw/ap6/open/forex/v1.0/GetFXRate"
@@ -82,8 +90,16 @@ def fetch_next_bank():
         res = requests.post(url, headers=headers, json={}, verify=False, timeout=5)
         data = res.json()
         usd_item = next(item for item in data['data']['currencyList'] if item['currency'] == 'USD')
-        return {"usd": float(usd_item['buyRate']), "name": "NEXT Bank"}
-    except: return None
+        # buyRate: 銀行買入外幣（客戶賣出外幣換 TWD）
+        # sellRate: 銀行賣出外幣（客戶買入外幣）
+        return {
+            "sell": float(usd_item.get('sellRate', usd_item['buyRate'])),  # 客戶買入美元匯率
+            "buy": float(usd_item['buyRate']),  # 客戶賣出美元匯率
+            "name": "NEXT Bank"
+        }
+    except Exception as e:
+        print(f"❌ NEXT Bank 抓取失敗：{e}")
+        return None
 
 # ── API 端點 ──────────────────────────────────────────────────────────
 
@@ -124,8 +140,8 @@ def get_rates():
             {"provider": hoya_d["name"], "rate": hoya_d["usdc"]} if hoya_d else None,
         ],
         "USD_BANK": [
-            {"provider": line_d["name"], "rate": line_d["usd"]} if line_d else None,
-            {"provider": next_d["name"], "rate": next_d["usd"]} if next_d else None,
+            {"provider": line_d["name"], "sell": line_d["sell"], "buy": line_d["buy"]} if line_d else None,
+            {"provider": next_d["name"], "sell": next_d["sell"], "buy": next_d["buy"]} if next_d else None,
         ]
     }
     

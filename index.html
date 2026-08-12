@@ -181,19 +181,25 @@
 <div class="wrap">
   <div class="header">
     <div class="header-tag">USDT/USDC EXCHANGE AGGREGATOR</div>
-    <h1><strong>TWD</strong> 換 <strong>USDT/USDC</strong> 比較</h1>
-    <p class="header-sub">實時匯率 · 手續費計算 · 最佳價格</p>
+    <h1><strong id="mode-title">TWD</strong> 換 <strong>USDT/USDC</strong> 比較</h1>
+    <p class="header-sub" id="mode-subtitle">實時匯率 · 手續費計算 · 最佳價格</p>
+  </div>
+
+  <!-- 模式切換按鈕 -->
+  <div style="display: flex; gap: 8px; margin-bottom: 1.5rem;">
+    <button id="btn-buy-mode" class="preset-btn" onclick="switchMode('buy')" style="flex: 1; padding: 12px; font-size: 14px; font-weight: 500;">💰 TWD 買入 USDT/USDC</button>
+    <button id="btn-sell-mode" class="preset-btn" onclick="switchMode('sell')" style="flex: 1; padding: 12px; font-size: 14px; font-weight: 500;">💵 USDT/USDC 賣回 TWD</button>
   </div>
 
   <div class="input-section">
-    <div class="input-label">💰 輸入台幣金額</div>
+    <div class="input-label" id="input-label">💰 輸入台幣金額</div>
     <div class="input-row">
       <div class="input-wrapper">
-        <span class="currency-badge">TWD</span>
+        <span class="currency-badge" id="input-currency-badge">TWD</span>
         <input type="number" id="twdInput" class="twd-input" placeholder="輸入金額" value="10000">
       </div>
     </div>
-    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:1rem;">
+    <div id="twd-presets" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:1rem;">
       <button class="preset-btn" onclick="setAmount(1000)">1,000</button>
       <button class="preset-btn" onclick="setAmount(5000)">5,000</button>
       <button class="preset-btn" onclick="setAmount(10000)">10,000</button>
@@ -201,6 +207,15 @@
       <button class="preset-btn" onclick="setAmount(100000)">100,000</button>
       <button class="preset-btn" onclick="setAmount(500000)">500,000</button>
       <button class="preset-btn" onclick="setAmount(1000000)">1,000,000</button>
+    </div>
+    <div id="usdt-presets" style="display:none; gap:6px; flex-wrap:wrap; margin-top:1rem;">
+      <button class="preset-btn" onclick="setCryptoAmount(100)">100</button>
+      <button class="preset-btn" onclick="setCryptoAmount(500)">500</button>
+      <button class="preset-btn" onclick="setCryptoAmount(1000)">1,000</button>
+      <button class="preset-btn" onclick="setCryptoAmount(5000)">5,000</button>
+      <button class="preset-btn" onclick="setCryptoAmount(10000)">10,000</button>
+      <button class="preset-btn" onclick="setCryptoAmount(50000)">50,000</button>
+      <button class="preset-btn" onclick="setCryptoAmount(100000)">100,000</button>
     </div>
     <div class="refresh-row">
       <span class="update-time" id="updateTime"><span class="dot loading"></span>載入中...</span>
@@ -223,7 +238,7 @@
     </div>
   </div>
 
-  <div class="section-title">📊 USDT 到價匯率</div>
+  <div class="section-title" id="usdt-section-title">📊 USDT 到價匯率</div>
   <div class="cards-grid">
     <div class="ex-card" id="card-max">
       <div class="card-header">
@@ -340,7 +355,7 @@
     </div>
   </div>
 
-  <div class="section-title">📊 USDC 到價匯率</div>
+  <div class="section-title" id="usdc-section-title">📊 USDC 到價匯率</div>
   <div class="cards-grid">
     <div class="ex-card" id="card-max-usdc">
       <div class="card-header">
@@ -457,7 +472,7 @@
     </div>
   </div>
 
-  <div class="section-title">🏦 USD 銀行匯率</div>
+  <div class="section-title" id="bank-section-title">🏦 USD 銀行匯率</div>
   <div class="cards-grid">
     <div class="ex-card" id="card-linebank">
       <div class="card-header">
@@ -534,12 +549,15 @@
 <script>
 const API_BASE = window.location.origin + '/api/rates';
 
+// 當前模式：'buy' = TWD 買入 USDT/USDC, 'sell' = USDT/USDC 賣回 TWD
+let currentMode = 'buy';
+
 const rates = { 
-  max: { sell: null, usdc: null }, 
-  bitopro: { sell: null, usdc: null }, 
-  hoya: { sell: null, usdc: null },
-  linebank: null,
-  nextbank: null
+  max: { sell: null, buy: null, usdc: null }, 
+  bitopro: { sell: null, buy: null, usdc: null }, 
+  hoya: { sell: null, buy: null, usdc: null },
+  linebank: { sell: null, buy: null },
+  nextbank: { sell: null, buy: null }
 };
 
 const feeConfig = {
@@ -550,6 +568,63 @@ const feeConfig = {
   'bitopro-usdc': { mode: 'limit', market: 0.20, limit: 0.10, custom: 0.10 },
   'hoya-usdc': { mode: 'zero', market: 0, limit: 0, custom: 0 }
 };
+
+// 切換模式
+function switchMode(mode) {
+  currentMode = mode;
+  
+  // 更新按鈕樣式
+  document.getElementById('btn-buy-mode').classList.toggle('active', mode === 'buy');
+  document.getElementById('btn-sell-mode').classList.toggle('active', mode === 'sell');
+  
+  // 更新標題
+  if (mode === 'buy') {
+    document.getElementById('mode-title').textContent = 'TWD';
+    document.getElementById('mode-subtitle').textContent = '實時匯率 · 手續費計算 · 最佳價格';
+    document.getElementById('input-label').textContent = '💰 輸入台幣金額';
+    document.getElementById('input-currency-badge').textContent = 'TWD';
+    document.getElementById('twdInput').placeholder = '輸入金額';
+    document.getElementById('twd-presets').style.display = 'flex';
+    document.getElementById('usdt-presets').style.display = 'none';
+    
+    document.getElementById('usdt-section-title').textContent = '📊 USDT 到價匯率';
+    document.getElementById('usdc-section-title').textContent = '📊 USDC 到價匯率';
+    document.getElementById('bank-section-title').textContent = '🏦 USD 銀行匯率';
+    
+    // 更新卡片標題
+    updateCardTitles('buy');
+  } else {
+    document.getElementById('mode-title').textContent = 'USDT/USDC';
+    document.getElementById('mode-subtitle').textContent = '賣出換取 TWD · 比較最佳價格';
+    document.getElementById('input-label').textContent = '💵 輸入 USDT/USDC 數量';
+    document.getElementById('input-currency-badge').textContent = 'USDT';
+    document.getElementById('twdInput').placeholder = '輸入 crypto 數量';
+    document.getElementById('twd-presets').style.display = 'none';
+    document.getElementById('usdt-presets').style.display = 'flex';
+    
+    document.getElementById('usdt-section-title').textContent = '📈 USDT 收購價格';
+    document.getElementById('usdc-section-title').textContent = '📈 USDC 收購價格';
+    document.getElementById('bank-section-title').textContent = '🏦 USD 賣出匯率';
+    
+    // 更新卡片標題
+    updateCardTitles('sell');
+  }
+  
+  recalcAll();
+}
+
+function updateCardTitles(mode) {
+  const cardPairs = document.querySelectorAll('.card-pair');
+  cardPairs.forEach(el => {
+    if (el.textContent.includes('USDT/TWD')) {
+      el.textContent = mode === 'buy' ? 'USDT/TWD' : 'TWD/USDT';
+    } else if (el.textContent.includes('USDC/TWD')) {
+      el.textContent = mode === 'buy' ? 'USDC/TWD' : 'TWD/USDC';
+    } else if (el.textContent.includes('USD/TWD')) {
+      el.textContent = mode === 'buy' ? 'USD/TWD' : 'TWD/USD';
+    }
+  });
+}
 
 function getFee(id) {
   const c = feeConfig[id];
@@ -607,13 +682,20 @@ function updateCustomFee(id) {
 }
 
 function getTWD() { return parseFloat(document.getElementById('twdInput').value) || 0; }
+function getCryptoAmount() { return parseFloat(document.getElementById('twdInput').value) || 0; }
 function setAmount(v) { document.getElementById('twdInput').value = v; recalcAll(); }
+function setCryptoAmount(v) { document.getElementById('twdInput').value = v; recalcAll(); }
 function addAmount(v) { 
   const current = getTWD();
   document.getElementById('twdInput').value = current + v; 
   recalcAll(); 
 }
 document.getElementById('twdInput').addEventListener('input', recalcAll);
+
+// 根據模式獲取輸入值
+function getInputAmount() {
+  return parseFloat(document.getElementById('twdInput').value) || 0;
+}
 
 function updateBestUSDC() {
   let bestId = null, bestVal = 0;
@@ -643,14 +725,30 @@ function getNetUSDC(id) {
   const r = rates[baseId];
   if (!r || !r.usdc) return null;
   const fee = getFee(id);
-  return (getTWD() / r.usdc) * (1 - fee / 100);
+  const amount = getInputAmount();
+  
+  if (currentMode === 'buy') {
+    // TWD -> USDC: amount / rate * (1 - fee%)
+    return (amount / r.usdc) * (1 - fee / 100);
+  } else {
+    // USDC -> TWD: amount * rate * (1 - fee%)
+    return amount * r.usdc * (1 - fee / 100);
+  }
 }
 
 function getNetUsdt(id) {
   const r = rates[id];
   if (!r || !r.sell) return null;
   const fee = getFee(id);
-  return (getTWD() / r.sell) * (1 - fee / 100);
+  const amount = getInputAmount();
+  
+  if (currentMode === 'buy') {
+    // TWD -> USDT: amount / rate * (1 - fee%)
+    return (amount / r.sell) * (1 - fee / 100);
+  } else {
+    // USDT -> TWD: amount * rate * (1 - fee%)
+    return amount * r.sell * (1 - fee / 100);
+  }
 }
 
 function recalcCard(id) {
@@ -662,25 +760,41 @@ function recalcCard(id) {
     return;
   }
   
-  const twd = getTWD();
+  const amount = getInputAmount();
   const fee = getFee(id);
-  const gross = twd / r.sell;
-  const net = gross * (1 - fee / 100);
-  const feeAmt = gross - net;
   
-  console.log(`recalcCard: ${id} - twd=${twd}, fee=${fee}, gross=${gross}, net=${net}`);
+  let gross, net, feeAmt;
+  if (currentMode === 'buy') {
+    // TWD -> USDT
+    gross = amount / r.sell;
+    net = gross * (1 - fee / 100);
+    feeAmt = gross - net;
+  } else {
+    // USDT -> TWD
+    gross = amount * r.sell;
+    net = gross * (1 - fee / 100);
+    feeAmt = gross - net;
+  }
+  
+  console.log(`recalcCard: ${id} - mode=${currentMode}, amount=${amount}, fee=${fee}, gross=${gross}, net=${net}`);
   
   const usdtEl = document.getElementById(id + '-usdt');
   if (usdtEl) { 
-    usdtEl.textContent = net.toFixed(4); 
+    usdtEl.textContent = net.toFixed(2); 
     usdtEl.classList.remove('loading'); 
-    console.log(`Updated ${id}-usdt to ${net.toFixed(4)}`);
+    console.log(`Updated ${id}-usdt to ${net.toFixed(2)}`);
   }
   const noteEl = document.getElementById(id + '-fee-note');
   if (noteEl) {
-    noteEl.textContent = fee > 0
-      ? '手續費 ' + feeAmt.toFixed(4) + ' USDT（' + fee.toFixed(2) + '%）'
-      : '閃兌無手續費 ✓';
+    if (currentMode === 'buy') {
+      noteEl.textContent = fee > 0
+        ? '手續費 ' + feeAmt.toFixed(4) + ' USDT（' + fee.toFixed(2) + '%）'
+        : '閃兌無手續費 ✓';
+    } else {
+      noteEl.textContent = fee > 0
+        ? '手續費 ' + feeAmt.toFixed(2) + ' TWD（' + fee.toFixed(2) + '%）'
+        : '閃兌無手續費 ✓';
+    }
   }
 }
 
@@ -692,59 +806,102 @@ function recalcAll() {
 }
 
 function calcUSDC() {
-  const twd = getTWD();
+  const amount = getInputAmount();
   ['max-usdc','bitopro-usdc','hoya-usdc'].forEach(id => {
     const baseId = id.replace('-usdc', '');
     const r = rates[baseId];
-    if (!r || !r.usdc || twd <= 0) return;
+    if (!r || !r.usdc || amount <= 0) return;
     
     const fee = getFee(id);
-    const gross = twd / r.usdc;
-    const net = gross * (1 - fee / 100);
-    const feeAmt = gross - net;
+    let gross, net, feeAmt;
+    
+    if (currentMode === 'buy') {
+      // TWD -> USDC
+      gross = amount / r.usdc;
+      net = gross * (1 - fee / 100);
+      feeAmt = gross - net;
+    } else {
+      // USDC -> TWD
+      gross = amount * r.usdc;
+      net = gross * (1 - fee / 100);
+      feeAmt = gross - net;
+    }
     
     const usdcEl = document.getElementById(id);
     if (usdcEl) { 
-      usdcEl.textContent = net.toFixed(4); 
+      usdcEl.textContent = net.toFixed(2); 
       usdcEl.classList.remove('loading'); 
     }
     
     const noteEl = document.getElementById(id + '-fee-note');
     if (noteEl) {
-      noteEl.textContent = fee > 0
-        ? '手續費 ' + feeAmt.toFixed(4) + ' USDC（' + fee.toFixed(2) + '%）'
-        : '閃兌無手續費 ✓';
+      if (currentMode === 'buy') {
+        noteEl.textContent = fee > 0
+          ? '手續費 ' + feeAmt.toFixed(4) + ' USDC（' + fee.toFixed(2) + '%）'
+          : '閃兌無手續費 ✓';
+      } else {
+        noteEl.textContent = fee > 0
+          ? '手續費 ' + feeAmt.toFixed(2) + ' TWD（' + fee.toFixed(2) + '%）'
+          : '閃兌無手續費 ✓';
+      }
     }
   });
 }
 
 function calcBank() {
-  const twd = getTWD();
+  const amount = getInputAmount();
   ['linebank','nextbank'].forEach(id => {
-    const rate = rates[id];
-    if (!rate || twd <= 0) {
+    const rateData = rates[id];
+    if (!rateData || amount <= 0) {
       const el = document.getElementById(id + '-usd');
       if (el) { el.textContent = '---'; el.classList.add('loading'); }
       return;
     }
     
-    // 計算初始 USD
-    const usdGross = twd / rate;
+    // 根據模式選擇匯率：buy 模式用 sell（銀行賣出），sell 模式用 buy（銀行買入）
+    const rate = currentMode === 'buy' ? rateData.sell : rateData.buy;
+    if (!rate) {
+      const el = document.getElementById(id + '-usd');
+      if (el) { el.textContent = '---'; el.classList.add('loading'); }
+      return;
+    }
     
-    // 取得電匯費用
-    const feeTwd = parseFloat(document.getElementById(id + '-fee-twd').value) || 0;
-    const feeUsd = parseFloat(document.getElementById(id + '-fee-usd').value) || 0;
+    let result, feeNote;
     
-    // 如果輸入 TWD 費用，轉換為 USD；否則直接用 USD 費用
-    const totalFeeUsd = feeTwd > 0 ? feeTwd / rate : feeUsd;
-    
-    // 扣除費用後的 USD
-    const usdNet = usdGross - totalFeeUsd;
+    if (currentMode === 'buy') {
+      // TWD -> USD: 用 TWD 金額除以銀行賣出價
+      const usdGross = amount / rate;
+      
+      // 取得電匯費用
+      const feeTwd = parseFloat(document.getElementById(id + '-fee-twd').value) || 0;
+      const feeUsd = parseFloat(document.getElementById(id + '-fee-usd').value) || 0;
+      
+      // 如果輸入 TWD 費用，轉換為 USD；否則直接用 USD 費用
+      const totalFeeUsd = feeTwd > 0 ? feeTwd / rate : feeUsd;
+      
+      // 扣除費用後的 USD
+      const usdNet = usdGross - totalFeeUsd;
+      
+      result = usdNet;
+      feeNote = `電匯費後淨額`;
+    } else {
+      // USD -> TWD: 用 USD 金額乘以銀行買入價
+      const twdGross = amount * rate;
+      
+      // 銀行手續費通常已反映在匯差中
+      result = twdGross;
+      feeNote = `已含銀行手續費`;
+    }
     
     const el = document.getElementById(id + '-usd');
     if (el) { 
-      el.textContent = usdNet.toFixed(4); 
+      el.textContent = result.toFixed(2); 
       el.classList.remove('loading'); 
+    }
+    
+    const noteEl = document.getElementById(id + '-fee-note');
+    if (noteEl) {
+      noteEl.textContent = feeNote;
     }
   });
 }
@@ -773,24 +930,55 @@ function updateBest() {
 }
 
 function updateSummary() {
-  if (!getTWD()) return;
+  const amount = getInputAmount();
+  if (!amount) return;
+  
   const names = { max: 'MAX 交易所', bitopro: 'BitoPro 幣託', hoya: 'HOYA BIT', linebank: 'LINE Bank', nextbank: 'NEXT Bank' };
   const modeLabel = { market: '市價', limit: '限價', custom: '自訂', zero: '閃兌' };
   
   // USDT 排行榜 (包含銀行)
   const usdtEntries = ['max','bitopro','hoya']
-    .map(id => { const v = getNetUsdt(id); const r = rates[id]; return v ? { id, name: names[id], amount: v, sell: r.sell, fee: getFee(id), mode: feeConfig[id].mode, type: 'USDT', tag: '交易所' } : null; })
+    .map(id => { 
+      const v = getNetUsdt(id); 
+      const r = rates[id]; 
+      if (!v || !r.sell) return null;
+      
+      let resultType, rateValue;
+      if (currentMode === 'buy') {
+        resultType = 'USDT';
+        rateValue = r.sell;
+      } else {
+        resultType = 'TWD';
+        rateValue = r.sell;
+      }
+      return { id, name: names[id], amount: v, sell: r.sell, fee: getFee(id), mode: feeConfig[id].mode, type: resultType, tag: '交易所' };
+    })
     .filter(Boolean);
   
-  // 加入銀行 USD（轉換為 USDT 價值用於排序）
+  // 加入銀行
   ['linebank','nextbank'].forEach(id => {
-    const usdAmount = rates[id] ? (getTWD() / rates[id]) : 0;
-    const feeTwd = parseFloat(document.getElementById(id + '-fee-twd').value) || 0;
-    const feeUsd = parseFloat(document.getElementById(id + '-fee-usd').value) || 0;
-    const totalFeeUsd = feeTwd > 0 ? feeTwd / rates[id] : feeUsd;
-    const usdNet = usdAmount - totalFeeUsd;
-    if (rates[id] && usdNet > 0) {
-      usdtEntries.push({ id, name: names[id], amount: usdNet, sell: rates[id], fee: 0, mode: 'bank', type: 'USD', tag: '銀行' });
+    const rateData = rates[id];
+    if (!rateData) return;
+    
+    if (currentMode === 'buy') {
+      // TWD -> USD
+      const rate = rateData.sell;
+      if (!rate) return;
+      const feeTwd = parseFloat(document.getElementById(id + '-fee-twd').value) || 0;
+      const feeUsd = parseFloat(document.getElementById(id + '-fee-usd').value) || 0;
+      const totalFeeUsd = feeTwd > 0 ? feeTwd / rate : feeUsd;
+      const usdNet = (amount / rate) - totalFeeUsd;
+      if (usdNet > 0) {
+        usdtEntries.push({ id, name: names[id], amount: usdNet, sell: rate, fee: 0, mode: 'bank', type: 'USD', tag: '銀行' });
+      }
+    } else {
+      // USD -> TWD
+      const rate = rateData.buy;
+      if (!rate) return;
+      const twdAmount = amount * rate;
+      if (twdAmount > 0) {
+        usdtEntries.push({ id, name: names[id], amount: twdAmount, sell: rate, fee: 0, mode: 'bank', type: 'TWD', tag: '銀行' });
+      }
     }
   });
   
@@ -807,8 +995,8 @@ function updateSummary() {
           <span class="summary-tag ${e.tag === '銀行' ? 'bank' : 'exchange'}">${e.tag}</span>
         </div>
         <div class="summary-right">
-          <div class="summary-usdt">${e.amount.toFixed(4)} ${e.type}</div>
-          <div class="summary-rate">@ ${e.sell.toFixed(3)} TWD · 費後淨額</div>
+          <div class="summary-usdt">${e.amount.toFixed(2)} ${e.type}</div>
+          <div class="summary-rate">@ ${e.sell.toFixed(3)} · 費後淨額</div>
         </div>
       </div>`).join('');
   } else {
@@ -822,21 +1010,41 @@ function updateSummary() {
       if (!r || !r.usdc) return null;
       const usdcId = id + '-usdc';
       const fee = getFee(usdcId);
-      const usdcGross = getTWD() / r.usdc;
-      const usdcNet = usdcGross * (1 - fee / 100);
-      return { id, name: names[id], amount: usdcNet, sell: r.usdc, fee: fee, mode: feeConfig[usdcId].mode, type: 'USDC', tag: '交易所' };
+      const v = getNetUSDC(usdcId);
+      if (!v) return null;
+      
+      let resultType;
+      if (currentMode === 'buy') {
+        resultType = 'USDC';
+      } else {
+        resultType = 'TWD';
+      }
+      return { id, name: names[id], amount: v, sell: r.usdc, fee: fee, mode: feeConfig[usdcId].mode, type: resultType, tag: '交易所' };
     })
     .filter(Boolean);
   
   // 加入銀行 USD 到 USDC 排行榜
   ['linebank','nextbank'].forEach(id => {
-    const usdAmount = rates[id] ? (getTWD() / rates[id]) : 0;
-    const feeTwd = parseFloat(document.getElementById(id + '-fee-twd').value) || 0;
-    const feeUsd = parseFloat(document.getElementById(id + '-fee-usd').value) || 0;
-    const totalFeeUsd = feeTwd > 0 ? feeTwd / rates[id] : feeUsd;
-    const usdNet = usdAmount - totalFeeUsd;
-    if (rates[id] && usdNet > 0) {
-      usdcEntries.push({ id, name: names[id], amount: usdNet, sell: rates[id], fee: 0, mode: 'bank', type: 'USD', tag: '銀行' });
+    const rateData = rates[id];
+    if (!rateData) return;
+    
+    if (currentMode === 'buy') {
+      const rate = rateData.sell;
+      if (!rate) return;
+      const feeTwd = parseFloat(document.getElementById(id + '-fee-twd').value) || 0;
+      const feeUsd = parseFloat(document.getElementById(id + '-fee-usd').value) || 0;
+      const totalFeeUsd = feeTwd > 0 ? feeTwd / rate : feeUsd;
+      const usdNet = (amount / rate) - totalFeeUsd;
+      if (usdNet > 0) {
+        usdcEntries.push({ id, name: names[id], amount: usdNet, sell: rate, fee: 0, mode: 'bank', type: 'USD', tag: '銀行' });
+      }
+    } else {
+      const rate = rateData.buy;
+      if (!rate) return;
+      const twdAmount = amount * rate;
+      if (twdAmount > 0) {
+        usdcEntries.push({ id, name: names[id], amount: twdAmount, sell: rate, fee: 0, mode: 'bank', type: 'TWD', tag: '銀行' });
+      }
     }
   });
   
@@ -853,8 +1061,8 @@ function updateSummary() {
           <span class="summary-tag ${e.tag === '銀行' ? 'bank' : 'exchange'}">${e.tag}</span>
         </div>
         <div class="summary-right">
-          <div class="summary-usdt">${e.amount.toFixed(4)} ${e.type}</div>
-          <div class="summary-rate">@ ${e.sell.toFixed(3)} TWD · 費後淨額</div>
+          <div class="summary-usdt">${e.amount.toFixed(2)} ${e.type}</div>
+          <div class="summary-rate">@ ${e.sell.toFixed(3)} · 費後淨額</div>
         </div>
       </div>`).join('');
   } else {
@@ -997,12 +1205,14 @@ async function fetchAllRates() {
     if (data.USD_BANK && Array.isArray(data.USD_BANK)) {
       data.USD_BANK.forEach(item => {
         if (item && item.provider === 'LINE Bank') {
-          rates.linebank = item.rate;
-          showRate('linebank', item.rate);
+          rates.linebank.sell = item.sell;
+          rates.linebank.buy = item.buy;
+          showRate('linebank', currentMode === 'buy' ? item.sell : item.buy);
           showStatus('linebank', true);
         } else if (item && item.provider === 'NEXT Bank') {
-          rates.nextbank = item.rate;
-          showRate('nextbank', item.rate);
+          rates.nextbank.sell = item.sell;
+          rates.nextbank.buy = item.buy;
+          showRate('nextbank', currentMode === 'buy' ? item.sell : item.buy);
           showStatus('nextbank', true);
         }
       });
