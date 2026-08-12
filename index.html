@@ -278,15 +278,25 @@
     </div>
   </div>
 
-  <!-- 排行榜篩選控制列 -->
+  <!-- 排行榜與銀行地區控制列 -->
   <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 0.8rem;">
     <div style="font-size: 14px; font-weight: 600; color: var(--text-heading); display: flex; align-items: center; gap: 6px;">
       <span>🏆 費後淨額總排行榜</span>
     </div>
-    <div id="summary-filter-toggle" style="display: flex; gap: 6px; background: var(--surface2); border-radius: 8px; padding: 3px; border: 1px solid var(--border2);">
-      <button class="fee-btn active" id="btn-summary-filter-all" onclick="setSummaryFilter('all')" style="padding: 4px 12px; font-size: 11px;">🌐 顯示全部</button>
-      <button class="fee-btn" id="btn-summary-filter-exchange" onclick="setSummaryFilter('exchange')" style="padding: 4px 12px; font-size: 11px;">🪙 只顯示交易所</button>
-      <button class="fee-btn" id="btn-summary-filter-bank" onclick="setSummaryFilter('bank')" style="padding: 4px 12px; font-size: 11px;">🏦 只顯示銀行</button>
+    
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <!-- 排行榜對象篩選 -->
+      <div id="summary-filter-toggle" style="display: flex; gap: 6px; background: var(--surface2); border-radius: 8px; padding: 3px; border: 1px solid var(--border2);">
+        <button class="fee-btn active" id="btn-summary-filter-all" onclick="setSummaryFilter('all')" style="padding: 4px 12px; font-size: 11px;">🌐 顯示全部</button>
+        <button class="fee-btn" id="btn-summary-filter-exchange" onclick="setSummaryFilter('exchange')" style="padding: 4px 12px; font-size: 11px;">🪙 只顯示交易所</button>
+        <button class="fee-btn" id="btn-summary-filter-bank" onclick="setSummaryFilter('bank')" style="padding: 4px 12px; font-size: 11px;">🏦 只顯示銀行</button>
+      </div>
+
+      <!-- 銀行地區電匯預設切換 -->
+      <div id="bank-region-toggle" style="display: flex; gap: 6px; background: var(--surface2); border-radius: 8px; padding: 3px; border: 1px solid var(--border2);">
+        <button class="fee-btn" id="btn-region-usa" onclick="switchBankRegion('usa')" style="padding: 4px 12px; font-size: 11px;">🇺🇸 匯至美國</button>
+        <button class="fee-btn active" id="btn-region-other" onclick="switchBankRegion('other')" style="padding: 4px 12px; font-size: 11px;">🌐 匯至其他國家</button>
+      </div>
     </div>
   </div>
 
@@ -536,13 +546,7 @@
     </div>
   </div>
 
-  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 0.75rem;">
-    <div class="section-title" id="bank-section-title" style="margin-bottom: 0;">🏦 USD 銀行匯率</div>
-    <div id="bank-region-toggle" style="display: flex; gap: 6px; background: var(--surface2); border-radius: 8px; padding: 3px; border: 1px solid var(--border2);">
-      <button class="fee-btn" id="btn-region-usa" onclick="switchBankRegion('usa')" style="padding: 4px 12px; font-size: 11px;">🇺🇸 匯至美國</button>
-      <button class="fee-btn active" id="btn-region-other" onclick="switchBankRegion('other')" style="padding: 4px 12px; font-size: 11px;">🌐 匯至其他國家</button>
-    </div>
-  </div>
+  <div class="section-title" id="bank-section-title">🏦 USD 銀行匯率</div>
   <div class="cards-grid">
     <div class="ex-card" id="card-linebank">
       <div class="card-header">
