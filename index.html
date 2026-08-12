@@ -278,6 +278,18 @@
     </div>
   </div>
 
+  <!-- 排行榜篩選控制列 -->
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 0.8rem;">
+    <div style="font-size: 14px; font-weight: 600; color: var(--text-heading); display: flex; align-items: center; gap: 6px;">
+      <span>🏆 費後淨額總排行榜</span>
+    </div>
+    <div id="summary-filter-toggle" style="display: flex; gap: 6px; background: var(--surface2); border-radius: 8px; padding: 3px; border: 1px solid var(--border2);">
+      <button class="fee-btn active" id="btn-summary-filter-all" onclick="setSummaryFilter('all')" style="padding: 4px 12px; font-size: 11px;">🌐 顯示全部</button>
+      <button class="fee-btn" id="btn-summary-filter-exchange" onclick="setSummaryFilter('exchange')" style="padding: 4px 12px; font-size: 11px;">🪙 只顯示交易所</button>
+      <button class="fee-btn" id="btn-summary-filter-bank" onclick="setSummaryFilter('bank')" style="padding: 4px 12px; font-size: 11px;">🏦 只顯示銀行</button>
+    </div>
+  </div>
+
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.75rem; grid-auto-flow: row;">
     <div id="summary-usdt" class="summary" style="margin-bottom: 0;">
       <div class="summary-title">🥇 USDT 排行榜（費後淨額）</div>
@@ -1003,6 +1015,18 @@ function formatCurrency(val, decimals = 2) {
   });
 }
 
+// 排行榜篩選模式：'all' (全部), 'exchange' (交易所), 'bank' (銀行)
+let currentSummaryFilter = 'all';
+
+function setSummaryFilter(filter) {
+  currentSummaryFilter = filter;
+  const allBtn = document.getElementById('btn-summary-filter-all'); if (allBtn) allBtn.classList.toggle('active', filter === 'all');
+  const exBtn = document.getElementById('btn-summary-filter-exchange'); if (exBtn) exBtn.classList.toggle('active', filter === 'exchange');
+  const bkBtn = document.getElementById('btn-summary-filter-bank'); if (bkBtn) bkBtn.classList.toggle('active', filter === 'bank');
+  
+  updateSummary();
+}
+
 function getTWD() { return parseFloat(document.getElementById('twdInput').value) || 0; }
 function getCryptoAmount() { return parseFloat(document.getElementById('twdInput').value) || 0; }
 function setAmount(v) { document.getElementById('twdInput').value = v; recalcAll(); }
@@ -1346,10 +1370,17 @@ function updateSummary() {
   
   usdtEntries.sort((a,b) => b.amount - a.amount);
   
-  if (usdtEntries.length) {
+  let filteredUsdtEntries = usdtEntries;
+  if (currentSummaryFilter === 'exchange') {
+    filteredUsdtEntries = usdtEntries.filter(e => e.tag === '交易所');
+  } else if (currentSummaryFilter === 'bank') {
+    filteredUsdtEntries = usdtEntries.filter(e => e.tag === '銀行');
+  }
+  
+  if (filteredUsdtEntries.length) {
     document.getElementById('summary-usdt').classList.add('show');
     const medals = ['🥇','🥈','🥉'];
-    document.getElementById('summaryRows-usdt').innerHTML = usdtEntries.map((e,i) => `
+    document.getElementById('summaryRows-usdt').innerHTML = filteredUsdtEntries.map((e,i) => `
       <div class="summary-row">
         <div class="summary-left">
           <span style="font-size:16px">${medals[i]||i+1}</span>
@@ -1409,10 +1440,17 @@ function updateSummary() {
   
   usdcEntries.sort((a,b) => b.amount - a.amount);
   
-  if (usdcEntries.length) {
+  let filteredUsdcEntries = usdcEntries;
+  if (currentSummaryFilter === 'exchange') {
+    filteredUsdcEntries = usdcEntries.filter(e => e.tag === '交易所');
+  } else if (currentSummaryFilter === 'bank') {
+    filteredUsdcEntries = usdcEntries.filter(e => e.tag === '銀行');
+  }
+  
+  if (filteredUsdcEntries.length) {
     document.getElementById('summary-usdc').classList.add('show');
     const medals = ['🥇','🥈','🥉'];
-    document.getElementById('summaryRows-usdc').innerHTML = usdcEntries.map((e,i) => `
+    document.getElementById('summaryRows-usdc').innerHTML = filteredUsdcEntries.map((e,i) => `
       <div class="summary-row">
         <div class="summary-left">
           <span style="font-size:16px">${medals[i]||i+1}</span>
