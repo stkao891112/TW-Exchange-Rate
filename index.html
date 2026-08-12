@@ -306,15 +306,15 @@
       <div class="fee-toggle-wrap">
         <div class="fee-info">
           <span class="fee-label">手續費</span>
-          <span class="fee-val" id="max-fee-display">0.50%</span>
+          <span class="fee-val" id="max-fee-display">0.16%</span>
         </div>
         <div class="fee-toggle">
-          <button class="fee-btn" id="max-btn-market" onclick="setFeeMode('max','market')">市價</button>
-          <button class="fee-btn active" id="max-btn-limit" onclick="setFeeMode('max','limit')">限價</button>
+          <button class="fee-btn active" id="max-btn-market" onclick="setFeeMode('max','market')">市價</button>
+          <button class="fee-btn" id="max-btn-limit" onclick="setFeeMode('max','limit')">限價</button>
           <button class="fee-btn" id="max-btn-custom" onclick="setFeeMode('max','custom')">自訂</button>
         </div>
         <div class="custom-fee-row" id="max-custom-row">
-          <input type="number" id="max-custom-fee" class="custom-fee-input" placeholder="輸入手續費%" step="0.01" onchange="updateCustomFee('max')">
+          <input type="number" id="max-custom-fee" class="custom-fee-input" placeholder="輸入手續費%" step="0.01" value="0.16" oninput="updateCustomFee('max')" onchange="updateCustomFee('max')">
           <span class="custom-fee-pct">%</span>
         </div>
       </div>
@@ -346,15 +346,15 @@
       <div class="fee-toggle-wrap">
         <div class="fee-info">
           <span class="fee-label">手續費</span>
-          <span class="fee-val" id="bitopro-fee-display">0.50%</span>
+          <span class="fee-val" id="bitopro-fee-display">0.20%</span>
         </div>
         <div class="fee-toggle">
-          <button class="fee-btn" id="bitopro-btn-market" onclick="setFeeMode('bitopro','market')">市價</button>
-          <button class="fee-btn active" id="bitopro-btn-limit" onclick="setFeeMode('bitopro','limit')">限價</button>
+          <button class="fee-btn active" id="bitopro-btn-market" onclick="setFeeMode('bitopro','market')">市價</button>
+          <button class="fee-btn" id="bitopro-btn-limit" onclick="setFeeMode('bitopro','limit')">限價</button>
           <button class="fee-btn" id="bitopro-btn-custom" onclick="setFeeMode('bitopro','custom')">自訂</button>
         </div>
         <div class="custom-fee-row" id="bitopro-custom-row">
-          <input type="number" id="bitopro-custom-fee" class="custom-fee-input" placeholder="輸入手續費%" step="0.01" onchange="updateCustomFee('bitopro')">
+          <input type="number" id="bitopro-custom-fee" class="custom-fee-input" placeholder="輸入手續費%" step="0.01" value="0.20" oninput="updateCustomFee('bitopro')" onchange="updateCustomFee('bitopro')">
           <span class="custom-fee-pct">%</span>
         </div>
       </div>
@@ -423,15 +423,15 @@
       <div class="fee-toggle-wrap">
         <div class="fee-info">
           <span class="fee-label">手續費</span>
-          <span class="fee-val" id="max-usdc-fee-display">0.08%</span>
+          <span class="fee-val" id="max-usdc-fee-display">0.16%</span>
         </div>
         <div class="fee-toggle">
-          <button class="fee-btn" id="max-usdc-btn-market" onclick="setFeeMode('max-usdc','market')">市價</button>
-          <button class="fee-btn active" id="max-usdc-btn-limit" onclick="setFeeMode('max-usdc','limit')">限價</button>
+          <button class="fee-btn active" id="max-usdc-btn-market" onclick="setFeeMode('max-usdc','market')">市價</button>
+          <button class="fee-btn" id="max-usdc-btn-limit" onclick="setFeeMode('max-usdc','limit')">限價</button>
           <button class="fee-btn" id="max-usdc-btn-custom" onclick="setFeeMode('max-usdc','custom')">自訂</button>
         </div>
         <div class="custom-fee-row" id="max-usdc-custom-row">
-          <input type="number" id="max-usdc-custom-fee" class="custom-fee-input" placeholder="輸入手續費%" step="0.01" onchange="updateCustomFee('max-usdc')">
+          <input type="number" id="max-usdc-custom-fee" class="custom-fee-input" placeholder="輸入手續費%" step="0.01" value="0.16" oninput="updateCustomFee('max-usdc')" onchange="updateCustomFee('max-usdc')">
           <span class="custom-fee-pct">%</span>
         </div>
       </div>
@@ -463,15 +463,15 @@
       <div class="fee-toggle-wrap">
         <div class="fee-info">
           <span class="fee-label">手續費</span>
-          <span class="fee-val" id="bitopro-usdc-fee-display">0.10%</span>
+          <span class="fee-val" id="bitopro-usdc-fee-display">0.20%</span>
         </div>
         <div class="fee-toggle">
-          <button class="fee-btn" id="bitopro-usdc-btn-market" onclick="setFeeMode('bitopro-usdc','market')">市價</button>
-          <button class="fee-btn active" id="bitopro-usdc-btn-limit" onclick="setFeeMode('bitopro-usdc','limit')">限價</button>
+          <button class="fee-btn active" id="bitopro-usdc-btn-market" onclick="setFeeMode('bitopro-usdc','market')">市價</button>
+          <button class="fee-btn" id="bitopro-usdc-btn-limit" onclick="setFeeMode('bitopro-usdc','limit')">限價</button>
           <button class="fee-btn" id="bitopro-usdc-btn-custom" onclick="setFeeMode('bitopro-usdc','custom')">自訂</button>
         </div>
         <div class="custom-fee-row" id="bitopro-usdc-custom-row">
-          <input type="number" id="bitopro-usdc-custom-fee" class="custom-fee-input" placeholder="輸入手續費%" step="0.01" onchange="updateCustomFee('bitopro-usdc')">
+          <input type="number" id="bitopro-usdc-custom-fee" class="custom-fee-input" placeholder="輸入手續費%" step="0.01" value="0.20" oninput="updateCustomFee('bitopro-usdc')" onchange="updateCustomFee('bitopro-usdc')">
           <span class="custom-fee-pct">%</span>
         </div>
       </div>
@@ -689,7 +689,7 @@
   <div class="note-box">
     <strong>說明：</strong>匯率使用各平台最新即時價格。買入模式顯示賣出價；賣出模式顯示買入價。<br>
     <strong>限價</strong>單需掛單等待成交，<strong>市價</strong>單即時成交但費率較高。<strong>閃兌</strong>為零手續費交易。<br>
-    <strong>交易所費率：</strong>MAX 預設 0.08%（限價）、BitoPro 幣託預設 0.10%（限價）、HOYABIT 無手續費。<br>
+    <strong>交易所費率：</strong>MAX 預設 0.16%（市價）、BitoPro 幣託預設 0.20%（市價）、HOYABIT 無手續費。<br>
     <strong>銀行電匯預設：</strong>TWD買入模式預設「匯出」費用；賣回TWD模式預設「匯入」費用。
   </div>
 
@@ -786,11 +786,11 @@ const rates = {
 };
 
 const feeConfig = {
-  max: { mode: 'limit', market: 0.16, limit: 0.08, custom: 0.08 },
-  bitopro: { mode: 'limit', market: 0.20, limit: 0.10, custom: 0.10 },
+  max: { mode: 'market', market: 0.16, limit: 0.08, custom: 0.16 },
+  bitopro: { mode: 'market', market: 0.20, limit: 0.10, custom: 0.20 },
   hoya: { mode: 'zero', market: 0, limit: 0, custom: 0 },
-  'max-usdc': { mode: 'limit', market: 0.16, limit: 0.08, custom: 0.08 },
-  'bitopro-usdc': { mode: 'limit', market: 0.20, limit: 0.10, custom: 0.10 },
+  'max-usdc': { mode: 'market', market: 0.16, limit: 0.08, custom: 0.16 },
+  'bitopro-usdc': { mode: 'market', market: 0.20, limit: 0.10, custom: 0.20 },
   'hoya-usdc': { mode: 'zero', market: 0, limit: 0, custom: 0 }
 };
 
@@ -890,10 +890,12 @@ function getFee(id) {
 
 function setFeeMode(id, mode) {
   feeConfig[id].mode = mode;
-  document.getElementById(id + '-btn-market').classList.toggle('active', mode === 'market');
-  document.getElementById(id + '-btn-limit').classList.toggle('active', mode === 'limit');
-  const customInput = document.getElementById(id + '-custom-fee');
-  if (customInput) customInput.style.display = mode === 'custom' ? 'block' : 'none';
+  const mBtn = document.getElementById(id + '-btn-market'); if (mBtn) mBtn.classList.toggle('active', mode === 'market');
+  const lBtn = document.getElementById(id + '-btn-limit'); if (lBtn) lBtn.classList.toggle('active', mode === 'limit');
+  const cBtn = document.getElementById(id + '-btn-custom'); if (cBtn) cBtn.classList.toggle('active', mode === 'custom');
+  
+  const customRow = document.getElementById(id + '-custom-row');
+  if (customRow) customRow.style.display = mode === 'custom' ? 'flex' : 'none';
   
   updateFeeDisplay(id);
   
