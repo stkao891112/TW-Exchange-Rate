@@ -994,6 +994,15 @@ function updateCustomFee(id) {
   updateBest(); updateBestUSDC(); updateSummary();
 }
 
+// 會計格式化工具（加入千分位逗號 ,）
+function formatCurrency(val, decimals = 2) {
+  if (val === null || val === undefined || isNaN(val)) return '---';
+  return Number(val).toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  });
+}
+
 function getTWD() { return parseFloat(document.getElementById('twdInput').value) || 0; }
 function getCryptoAmount() { return parseFloat(document.getElementById('twdInput').value) || 0; }
 function setAmount(v) { document.getElementById('twdInput').value = v; recalcAll(); }
@@ -1027,7 +1036,7 @@ function updateBestUSDC() {
       diffEl.textContent = '▲ 最優惠'; diffEl.className = 'result-diff positive';
     } else {
       const diff = v - bestVal;
-      const formattedDiff = currentMode === 'buy' ? diff.toFixed(4) : Math.round(diff).toLocaleString('zh-TW');
+      const formattedDiff = currentMode === 'buy' ? formatCurrency(diff, 4) : formatCurrency(diff, 0);
       diffEl.textContent = formattedDiff + ' ' + unit + ' (' + ((diff/bestVal)*100).toFixed(2) + '%)';
       diffEl.className = 'result-diff negative';
     }
@@ -1097,18 +1106,18 @@ function recalcCard(id) {
   
   const usdtEl = document.getElementById(id + '-usdt');
   if (usdtEl) { 
-    usdtEl.textContent = currentMode === 'buy' ? net.toFixed(2) : Math.round(net).toLocaleString('zh-TW'); 
+    usdtEl.textContent = currentMode === 'buy' ? formatCurrency(net, 2) : formatCurrency(net, 0); 
     usdtEl.classList.remove('loading'); 
   }
   const noteEl = document.getElementById(id + '-fee-note');
   if (noteEl) {
     if (currentMode === 'buy') {
       noteEl.textContent = fee > 0
-        ? '手續費 ' + feeAmt.toFixed(4) + ' USDT（' + fee.toFixed(2) + '%）'
+        ? '手續費 ' + formatCurrency(feeAmt, 4) + ' USDT（' + fee.toFixed(2) + '%）'
         : '閃兌無手續費 ✓';
     } else {
       noteEl.textContent = fee > 0
-        ? '手續費 ' + Math.round(feeAmt).toLocaleString('zh-TW') + ' TWD（' + fee.toFixed(2) + '%）'
+        ? '手續費 ' + formatCurrency(feeAmt, 0) + ' TWD（' + fee.toFixed(2) + '%）'
         : '閃兌無手續費 ✓';
     }
   }
@@ -1155,7 +1164,7 @@ function calcUSDC() {
     
     const usdcEl = document.getElementById(id);
     if (usdcEl) { 
-      usdcEl.textContent = currentMode === 'buy' ? net.toFixed(2) : Math.round(net).toLocaleString('zh-TW'); 
+      usdcEl.textContent = currentMode === 'buy' ? formatCurrency(net, 2) : formatCurrency(net, 0); 
       usdcEl.classList.remove('loading'); 
     }
     
@@ -1163,11 +1172,11 @@ function calcUSDC() {
     if (noteEl) {
       if (currentMode === 'buy') {
         noteEl.textContent = fee > 0
-          ? '手續費 ' + feeAmt.toFixed(4) + ' USDC（' + fee.toFixed(2) + '%）'
+          ? '手續費 ' + formatCurrency(feeAmt, 4) + ' USDC（' + fee.toFixed(2) + '%）'
           : '閃兌無手續費 ✓';
       } else {
         noteEl.textContent = fee > 0
-          ? '手續費 ' + Math.round(feeAmt).toLocaleString('zh-TW') + ' TWD（' + fee.toFixed(2) + '%）'
+          ? '手續費 ' + formatCurrency(feeAmt, 0) + ' TWD（' + fee.toFixed(2) + '%）'
           : '閃兌無手續費 ✓';
       }
     }
@@ -1222,13 +1231,13 @@ function calcBank() {
       if (feePercent > 0) {
         const pctFeeUsd = usdGross * (feePercent / 100);
         const pctFeeTwd = pctFeeUsd * rate;
-        feeNote = `手續費 ${feePercent}%：${pctFeeUsd.toFixed(2)} USD（約 ${pctFeeTwd.toFixed(0)} TWD）`;
+        feeNote = `手續費 ${feePercent}%：${formatCurrency(pctFeeUsd, 2)} USD（約 ${formatCurrency(pctFeeTwd, 0)} TWD）`;
       } else if (feeUsd > 0) {
         const twdEquiv = feeUsd * rate;
-        feeNote = `電匯手續費：${feeUsd} USD（約 ${twdEquiv.toFixed(0)} TWD）`;
+        feeNote = `電匯手續費：${formatCurrency(feeUsd, 0)} USD（約 ${formatCurrency(twdEquiv, 0)} TWD）`;
       } else if (feeTwd > 0) {
         const usdEquiv = feeTwd / rate;
-        feeNote = `電匯手續費：${feeTwd} TWD（約 ${usdEquiv.toFixed(2)} USD）`;
+        feeNote = `電匯手續費：${formatCurrency(feeTwd, 0)} TWD（約 ${formatCurrency(usdEquiv, 2)} USD）`;
       } else {
         feeNote = `免電匯手續費 ✓`;
       }
@@ -1242,9 +1251,9 @@ function calcBank() {
       result = twdNet;
       
       if (feeTwd > 0) {
-        feeNote = `匯入手續費：${feeTwd} TWD`;
+        feeNote = `匯入手續費：${formatCurrency(feeTwd, 0)} TWD`;
       } else if (feeUsd > 0) {
-        feeNote = `匯入手續費：${feeUsd} USD`;
+        feeNote = `匯入手續費：${formatCurrency(feeUsd, 0)} USD`;
       } else {
         feeNote = `免匯入手續費 ✓`;
       }
@@ -1252,7 +1261,7 @@ function calcBank() {
     
     const el = document.getElementById(id + '-usd');
     if (el) { 
-      el.textContent = currentMode === 'buy' ? result.toFixed(2) : Math.round(result).toLocaleString('zh-TW'); 
+      el.textContent = currentMode === 'buy' ? formatCurrency(result, 2) : formatCurrency(result, 0); 
       el.classList.remove('loading'); 
     }
     
@@ -1281,7 +1290,7 @@ function updateBest() {
       diffEl.textContent = '▲ 最優惠'; diffEl.className = 'result-diff positive';
     } else {
       const diff = v - bestVal;
-      const formattedDiff = currentMode === 'buy' ? diff.toFixed(4) : Math.round(diff).toLocaleString('zh-TW');
+      const formattedDiff = currentMode === 'buy' ? formatCurrency(diff, 4) : formatCurrency(diff, 0);
       diffEl.textContent = formattedDiff + ' ' + unit + ' (' + ((diff/bestVal)*100).toFixed(2) + '%)';
       diffEl.className = 'result-diff negative';
     }
@@ -1348,7 +1357,7 @@ function updateSummary() {
           <span class="summary-tag ${e.tag === '銀行' ? 'bank' : 'exchange'}">${e.tag}</span>
         </div>
         <div class="summary-right">
-          <div class="summary-usdt">${e.type === 'TWD' ? Math.round(e.amount).toLocaleString('zh-TW') : e.amount.toFixed(2)} ${e.type}</div>
+          <div class="summary-usdt">${e.type === 'TWD' ? formatCurrency(e.amount, 0) : formatCurrency(e.amount, 2)} ${e.type}</div>
           <div class="summary-rate">@ ${e.rate.toFixed(3)} (${e.rateTag}) · 費後淨額</div>
         </div>
       </div>`).join('');
@@ -1411,7 +1420,7 @@ function updateSummary() {
           <span class="summary-tag ${e.tag === '銀行' ? 'bank' : 'exchange'}">${e.tag}</span>
         </div>
         <div class="summary-right">
-          <div class="summary-usdt">${e.type === 'TWD' ? Math.round(e.amount).toLocaleString('zh-TW') : e.amount.toFixed(2)} ${e.type}</div>
+          <div class="summary-usdt">${e.type === 'TWD' ? formatCurrency(e.amount, 0) : formatCurrency(e.amount, 2)} ${e.type}</div>
           <div class="summary-rate">@ ${e.rate.toFixed(3)} (${e.rateTag}) · 費後淨額</div>
         </div>
       </div>`).join('');
