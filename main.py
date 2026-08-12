@@ -18,16 +18,34 @@ def fetch_max():
     try:
         resp = requests.get("https://max-api.maicoin.com/api/v2/tickers", timeout=5)
         data = resp.json()
-        return {"usdt": float(data["usdttwd"]["last"]), "usdc": float(data["usdctwd"]["last"]), "name": "MAX"}
+        usdt_data = data["usdttwd"]
+        usdc_data = data["usdctwd"]
+        return {
+            "usdt": float(usdt_data["last"]),
+            "usdt_buy": float(usdt_data["buy"]),
+            "usdt_sell": float(usdt_data["sell"]),
+            "usdc": float(usdc_data["last"]),
+            "usdc_buy": float(usdc_data["buy"]),
+            "usdc_sell": float(usdc_data["sell"]),
+            "name": "MAX"
+        }
     except: return None
 
 def fetch_bitopro():
     try:
         resp = requests.get("https://api.bitopro.com/v3/tickers", timeout=5)
         tickers = resp.json()["data"]
-        usdt = next(t["lastPrice"] for t in tickers if t["pair"] == "usdt_twd")
-        usdc = next(t["lastPrice"] for t in tickers if t["pair"] == "usdc_twd")
-        return {"usdt": float(usdt), "usdc": float(usdc), "name": "BitoPro"}
+        usdt_ticker = next(t for t in tickers if t["pair"] == "usdt_twd")
+        usdc_ticker = next(t for t in tickers if t["pair"] == "usdc_twd")
+        return {
+            "usdt": float(usdt_ticker["lastPrice"]),
+            "usdt_buy": float(usdt_ticker["bid"]),
+            "usdt_sell": float(usdt_ticker["ask"]),
+            "usdc": float(usdc_ticker["lastPrice"]),
+            "usdc_buy": float(usdc_ticker["bid"]),
+            "usdc_sell": float(usdc_ticker["ask"]),
+            "name": "BitoPro"
+        }
     except: return None
 
 def fetch_hoyabit():
@@ -130,14 +148,14 @@ def get_rates():
 
     result = {
         "USDT": [
-            {"provider": max_d["name"], "rate": max_d["usdt"]} if max_d else None,
-            {"provider": bito_d["name"], "rate": bito_d["usdt"]} if bito_d else None,
-            {"provider": hoya_d["name"], "rate": hoya_d["usdt"]} if hoya_d else None,
+            {"provider": max_d["name"], "rate": max_d["usdt"], "buy": max_d["usdt_buy"], "sell": max_d["usdt_sell"]} if max_d else None,
+            {"provider": bito_d["name"], "rate": bito_d["usdt"], "buy": bito_d["usdt_buy"], "sell": bito_d["usdt_sell"]} if bito_d else None,
+            {"provider": hoya_d["name"], "rate": hoya_d["usdt"], "buy": hoya_d["usdt"], "sell": hoya_d["usdt"]} if hoya_d else None,
         ],
         "USDC": [
-            {"provider": max_d["name"], "rate": max_d["usdc"]} if max_d else None,
-            {"provider": bito_d["name"], "rate": bito_d["usdc"]} if bito_d else None,
-            {"provider": hoya_d["name"], "rate": hoya_d["usdc"]} if hoya_d else None,
+            {"provider": max_d["name"], "rate": max_d["usdc"], "buy": max_d["usdc_buy"], "sell": max_d["usdc_sell"]} if max_d else None,
+            {"provider": bito_d["name"], "rate": bito_d["usdc"], "buy": bito_d["usdc_buy"], "sell": bito_d["usdc_sell"]} if bito_d else None,
+            {"provider": hoya_d["name"], "rate": hoya_d["usdc"], "buy": hoya_d["usdc"], "sell": hoya_d["usdc"]} if hoya_d else None,
         ],
         "USD_BANK": [
             {"provider": line_d["name"], "sell": line_d["sell"], "buy": line_d["buy"]} if line_d else None,

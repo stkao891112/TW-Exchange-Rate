@@ -723,31 +723,31 @@ function updateBestUSDC() {
 function getNetUSDC(id) {
   const baseId = id.replace('-usdc', '');
   const r = rates[baseId];
-  if (!r || !r.usdc) return null;
+  if (!r || !r.sell || !r.buy) return null;
   const fee = getFee(id);
   const amount = getInputAmount();
   
   if (currentMode === 'buy') {
-    // TWD -> USDC: amount / rate * (1 - fee%)
-    return (amount / r.usdc) * (1 - fee / 100);
+    // TWD -> USDC: amount / sell * (1 - fee%)
+    return (amount / r.sell) * (1 - fee / 100);
   } else {
-    // USDC -> TWD: amount * rate * (1 - fee%)
-    return amount * r.usdc * (1 - fee / 100);
+    // USDC -> TWD: amount * buy * (1 - fee%)
+    return amount * r.buy * (1 - fee / 100);
   }
 }
 
 function getNetUsdt(id) {
   const r = rates[id];
-  if (!r || !r.sell) return null;
+  if (!r || !r.sell || !r.buy) return null;
   const fee = getFee(id);
   const amount = getInputAmount();
   
   if (currentMode === 'buy') {
-    // TWD -> USDT: amount / rate * (1 - fee%)
+    // TWD -> USDT: amount / sell * (1 - fee%)
     return (amount / r.sell) * (1 - fee / 100);
   } else {
-    // USDT -> TWD: amount * rate * (1 - fee%)
-    return amount * r.sell * (1 - fee / 100);
+    // USDT -> TWD: amount * buy * (1 - fee%)
+    return amount * r.buy * (1 - fee / 100);
   }
 }
 
@@ -765,13 +765,13 @@ function recalcCard(id) {
   
   let gross, net, feeAmt;
   if (currentMode === 'buy') {
-    // TWD -> USDT
+    // TWD -> USDT: 用 TWD 金額除以賣出價（客戶買入）
     gross = amount / r.sell;
     net = gross * (1 - fee / 100);
     feeAmt = gross - net;
   } else {
-    // USDT -> TWD
-    gross = amount * r.sell;
+    // USDT -> TWD: 用 USDT 金額乘以買入價（客戶賣出）
+    gross = amount * r.buy;
     net = gross * (1 - fee / 100);
     feeAmt = gross - net;
   }
@@ -816,13 +816,13 @@ function calcUSDC() {
     let gross, net, feeAmt;
     
     if (currentMode === 'buy') {
-      // TWD -> USDC
-      gross = amount / r.usdc;
+      // TWD -> USDC: 用 TWD 金額除以賣出價（客戶買入）
+      gross = amount / r.sell;
       net = gross * (1 - fee / 100);
       feeAmt = gross - net;
     } else {
-      // USDC -> TWD
-      gross = amount * r.usdc;
+      // USDC -> TWD: 用 USDC 金額乘以買入價（客戶賣出）
+      gross = amount * r.buy;
       net = gross * (1 - fee / 100);
       feeAmt = gross - net;
     }
@@ -1164,19 +1164,22 @@ async function fetchAllRates() {
       console.log('處理 USDT 數據:', data.USDT);
       data.USDT.forEach(item => {
         if (item && item.provider === 'MAX') {
-          console.log('設置 MAX USDT:', item.rate);
-          rates.max.sell = item.rate;
-          showRate('max', item.rate);
+          console.log('設置 MAX USDT:', item);
+          rates.max.sell = item.sell;
+          rates.max.buy = item.buy;
+          showRate('max', currentMode === 'buy' ? item.sell : item.buy);
           showStatus('max', true);
         } else if (item && item.provider === 'BitoPro') {
-          console.log('設置 BitoPro USDT:', item.rate);
-          rates.bitopro.sell = item.rate;
-          showRate('bitopro', item.rate);
+          console.log('設置 BitoPro USDT:', item);
+          rates.bitopro.sell = item.sell;
+          rates.bitopro.buy = item.buy;
+          showRate('bitopro', currentMode === 'buy' ? item.sell : item.buy);
           showStatus('bitopro', true);
         } else if (item && item.provider === 'HOYABIT') {
-          console.log('設置 HOYA USDT:', item.rate);
-          rates.hoya.sell = item.rate;
-          showRate('hoya', item.rate);
+          console.log('設置 HOYA USDT:', item);
+          rates.hoya.sell = item.sell;
+          rates.hoya.buy = item.buy;
+          showRate('hoya', currentMode === 'buy' ? item.sell : item.buy);
           showStatus('hoya', true);
         }
       });
@@ -1186,16 +1189,19 @@ async function fetchAllRates() {
     if (data.USDC && Array.isArray(data.USDC)) {
       data.USDC.forEach(item => {
         if (item && item.provider === 'MAX') {
-          rates.max.usdc = item.rate;
-          showRate('max-usdc', item.rate);
+          rates.max.usdc_sell = item.sell;
+          rates.max.usdc_buy = item.buy;
+          showRate('max-usdc', currentMode === 'buy' ? item.sell : item.buy);
           showStatus('max-usdc', true);
         } else if (item && item.provider === 'BitoPro') {
-          rates.bitopro.usdc = item.rate;
-          showRate('bitopro-usdc', item.rate);
+          rates.bitopro.usdc_sell = item.sell;
+          rates.bitopro.usdc_buy = item.buy;
+          showRate('bitopro-usdc', currentMode === 'buy' ? item.sell : item.buy);
           showStatus('bitopro-usdc', true);
         } else if (item && item.provider === 'HOYABIT') {
-          rates.hoya.usdc = item.rate;
-          showRate('hoya-usdc', item.rate);
+          rates.hoya.usdc_sell = item.sell;
+          rates.hoya.usdc_buy = item.buy;
+          showRate('hoya-usdc', currentMode === 'buy' ? item.sell : item.buy);
           showStatus('hoya-usdc', true);
         }
       });
