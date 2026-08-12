@@ -1380,7 +1380,7 @@ function showError(id) {
 function setUpdateTime(s) {
   const el = document.getElementById('updateTime');
   if (s==='loading') { el.innerHTML = '<span class="dot loading"></span>正在更新匯率...'; }
-  else if (s==='done') { const t = new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); el.innerHTML = `<span class="dot live"></span>最後更新 ${t}`; }
+  else if (s==='done') { const t = new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); el.innerHTML = `<span class="dot live"></span>最後更新 ${t} · 每 1 分鐘自動更新`; }
   else { el.innerHTML = '<span class="dot error"></span>更新失敗'; }
 }
 
@@ -1502,11 +1502,19 @@ async function fetchAllRates() {
 updateFeeDisplay('max'); updateFeeDisplay('bitopro'); updateFeeDisplay('hoya');
 updateFeeDisplay('max-usdc'); updateFeeDisplay('bitopro-usdc'); updateFeeDisplay('hoya-usdc');
 
-// 確保 DOM 已加載後再執行
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', fetchAllRates);
-} else {
+// 確保 DOM 已加載後執行，並啟動每 1 分鐘 (60000ms) 自動刷新定時器
+let autoRefreshInterval = null;
+
+function startAutoRefresh() {
   fetchAllRates();
+  if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+  autoRefreshInterval = setInterval(fetchAllRates, 60000);
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startAutoRefresh);
+} else {
+  startAutoRefresh();
 }
 </script>
 </body>
