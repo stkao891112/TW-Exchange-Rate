@@ -1207,6 +1207,36 @@ function calcUSDC() {
   });
 }
 
+function getNetBank(id) {
+  const rateData = rates[id];
+  if (!rateData) return null;
+  const amount = getInputAmount();
+  if (amount <= 0) return null;
+  
+  const rate = currentMode === 'buy' ? rateData.sell : rateData.buy;
+  if (!rate) return null;
+  
+  const feeTwd = parseFloat(document.getElementById(id + '-fee-twd')?.value) || 0;
+  const feeUsd = parseFloat(document.getElementById(id + '-fee-usd')?.value) || 0;
+  const feePercent = parseFloat(document.getElementById(id + '-fee-percent')?.value) || 0;
+  
+  if (currentMode === 'buy') {
+    const usdGross = amount / rate;
+    let totalFeeUsd = feeUsd + (feeTwd > 0 ? feeTwd / rate : 0);
+    if (feePercent > 0) {
+      totalFeeUsd += usdGross * (feePercent / 100);
+    }
+    return usdGross - totalFeeUsd;
+  } else {
+    const twdGross = amount * rate;
+    let totalFeeTwd = feeTwd + (feeUsd > 0 ? feeUsd * rate : 0);
+    if (feePercent > 0) {
+      totalFeeTwd += twdGross * (feePercent / 100);
+    }
+    return twdGross - totalFeeTwd;
+  }
+}
+
 function calcBank() {
   const amount = getInputAmount();
   ['linebank','nextbank','cubank','sinopac','richart'].forEach(id => {
@@ -1238,20 +1268,14 @@ function calcBank() {
     const resUnitEl = document.getElementById(id + '-result-unit');
     if (resUnitEl) resUnitEl.textContent = currentMode === 'buy' ? 'USD（扣除費用後）' : 'TWD（扣除費用後）';
     
-    let result, feeNote = '';
+    const result = getNetBank(id);
+    let feeNote = '';
     const feeTwd = parseFloat(document.getElementById(id + '-fee-twd')?.value) || 0;
     const feeUsd = parseFloat(document.getElementById(id + '-fee-usd')?.value) || 0;
     const feePercent = parseFloat(document.getElementById(id + '-fee-percent')?.value) || 0;
     
     if (currentMode === 'buy') {
       const usdGross = amount / rate;
-      let totalFeeUsd = feeUsd + (feeTwd > 0 ? feeTwd / rate : 0);
-      if (feePercent > 0) {
-        totalFeeUsd += usdGross * (feePercent / 100);
-      }
-      const usdNet = usdGross - totalFeeUsd;
-      result = usdNet;
-      
       if (feePercent > 0) {
         const pctFeeUsd = usdGross * (feePercent / 100);
         const pctFeeTwd = pctFeeUsd * rate;
@@ -1266,14 +1290,6 @@ function calcBank() {
         feeNote = `免電匯手續費 ✓`;
       }
     } else {
-      const twdGross = amount * rate;
-      let totalFeeTwd = feeTwd + (feeUsd > 0 ? feeUsd * rate : 0);
-      if (feePercent > 0) {
-        totalFeeTwd += twdGross * (feePercent / 100);
-      }
-      const twdNet = twdGross - totalFeeTwd;
-      result = twdNet;
-      
       if (feeTwd > 0) {
         feeNote = `匯入手續費：${formatCurrency(feeTwd, 0)} TWD`;
       } else if (feeUsd > 0) {
@@ -1344,27 +1360,14 @@ function updateSummary() {
   ['linebank','nextbank','cubank','sinopac','richart'].forEach(id => {
     const rateData = rates[id];
     if (!rateData) return;
+    const rate = currentMode === 'buy' ? rateData.sell : rateData.buy;
+    if (!rate) return;
     
-    if (currentMode === 'buy') {
-      const rate = rateData.sell;
-      if (!rate) return;
-      const feeTwd = parseFloat(document.getElementById(id + '-fee-twd').value) || 0;
-      const feeUsd = parseFloat(document.getElementById(id + '-fee-usd').value) || 0;
-      const totalFeeUsd = feeUsd + (feeTwd > 0 ? feeTwd / rate : 0);
-      const usdNet = (amount / rate) - totalFeeUsd;
-      if (usdNet > 0) {
-        usdtEntries.push({ id, name: names[id], amount: usdNet, rate: rate, fee: 0, mode: 'bank', type: 'USD', tag: '銀行', rateTag: '銀行賣出' });
-      }
-    } else {
-      const rate = rateData.buy;
-      if (!rate) return;
-      const feeTwd = parseFloat(document.getElementById(id + '-fee-twd').value) || 0;
-      const feeUsd = parseFloat(document.getElementById(id + '-fee-usd').value) || 0;
-      const totalFeeTwd = feeTwd + (feeUsd > 0 ? feeUsd * rate : 0);
-      const twdNet = (amount * rate) - totalFeeTwd;
-      if (twdNet > 0) {
-        usdtEntries.push({ id, name: names[id], amount: twdNet, rate: rate, fee: 0, mode: 'bank', type: 'TWD', tag: '銀行', rateTag: '銀行買入' });
-      }
+    const netAmt = getNetBank(id);
+    if (netAmt && netAmt > 0) {
+      const typeStr = currentMode === 'buy' ? 'USD' : 'TWD';
+      const rateTagStr = currentMode === 'buy' ? '銀行賣出' : '銀行買入';
+      usdtEntries.push({ id, name: names[id], amount: netAmt, rate: rate, fee: 0, mode: 'bank', type: typeStr, tag: '銀行', rateTag: rateTagStr });
     }
   });
   
@@ -1414,27 +1417,14 @@ function updateSummary() {
   ['linebank','nextbank','cubank','sinopac','richart'].forEach(id => {
     const rateData = rates[id];
     if (!rateData) return;
+    const rate = currentMode === 'buy' ? rateData.sell : rateData.buy;
+    if (!rate) return;
     
-    if (currentMode === 'buy') {
-      const rate = rateData.sell;
-      if (!rate) return;
-      const feeTwd = parseFloat(document.getElementById(id + '-fee-twd').value) || 0;
-      const feeUsd = parseFloat(document.getElementById(id + '-fee-usd').value) || 0;
-      const totalFeeUsd = feeUsd + (feeTwd > 0 ? feeTwd / rate : 0);
-      const usdNet = (amount / rate) - totalFeeUsd;
-      if (usdNet > 0) {
-        usdcEntries.push({ id, name: names[id], amount: usdNet, rate: rate, fee: 0, mode: 'bank', type: 'USD', tag: '銀行', rateTag: '銀行賣出' });
-      }
-    } else {
-      const rate = rateData.buy;
-      if (!rate) return;
-      const feeTwd = parseFloat(document.getElementById(id + '-fee-twd').value) || 0;
-      const feeUsd = parseFloat(document.getElementById(id + '-fee-usd').value) || 0;
-      const totalFeeTwd = feeTwd + (feeUsd > 0 ? feeUsd * rate : 0);
-      const twdNet = (amount * rate) - totalFeeTwd;
-      if (twdNet > 0) {
-        usdcEntries.push({ id, name: names[id], amount: twdNet, rate: rate, fee: 0, mode: 'bank', type: 'TWD', tag: '銀行', rateTag: '銀行買入' });
-      }
+    const netAmt = getNetBank(id);
+    if (netAmt && netAmt > 0) {
+      const typeStr = currentMode === 'buy' ? 'USD' : 'TWD';
+      const rateTagStr = currentMode === 'buy' ? '銀行賣出' : '銀行買入';
+      usdcEntries.push({ id, name: names[id], amount: netAmt, rate: rate, fee: 0, mode: 'bank', type: typeStr, tag: '銀行', rateTag: rateTagStr });
     }
   });
   
