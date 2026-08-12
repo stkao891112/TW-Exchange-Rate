@@ -1027,7 +1027,8 @@ function updateBestUSDC() {
       diffEl.textContent = '▲ 最優惠'; diffEl.className = 'result-diff positive';
     } else {
       const diff = v - bestVal;
-      diffEl.textContent = diff.toFixed(4) + ' ' + unit + ' (' + ((diff/bestVal)*100).toFixed(2) + '%)';
+      const formattedDiff = currentMode === 'buy' ? diff.toFixed(4) : Math.round(diff).toLocaleString('zh-TW');
+      diffEl.textContent = formattedDiff + ' ' + unit + ' (' + ((diff/bestVal)*100).toFixed(2) + '%)';
       diffEl.className = 'result-diff negative';
     }
   });
@@ -1096,7 +1097,7 @@ function recalcCard(id) {
   
   const usdtEl = document.getElementById(id + '-usdt');
   if (usdtEl) { 
-    usdtEl.textContent = net.toFixed(2); 
+    usdtEl.textContent = currentMode === 'buy' ? net.toFixed(2) : Math.round(net).toLocaleString('zh-TW'); 
     usdtEl.classList.remove('loading'); 
   }
   const noteEl = document.getElementById(id + '-fee-note');
@@ -1107,7 +1108,7 @@ function recalcCard(id) {
         : '閃兌無手續費 ✓';
     } else {
       noteEl.textContent = fee > 0
-        ? '手續費 ' + feeAmt.toFixed(2) + ' TWD（' + fee.toFixed(2) + '%）'
+        ? '手續費 ' + Math.round(feeAmt).toLocaleString('zh-TW') + ' TWD（' + fee.toFixed(2) + '%）'
         : '閃兌無手續費 ✓';
     }
   }
@@ -1154,7 +1155,7 @@ function calcUSDC() {
     
     const usdcEl = document.getElementById(id);
     if (usdcEl) { 
-      usdcEl.textContent = net.toFixed(2); 
+      usdcEl.textContent = currentMode === 'buy' ? net.toFixed(2) : Math.round(net).toLocaleString('zh-TW'); 
       usdcEl.classList.remove('loading'); 
     }
     
@@ -1166,7 +1167,7 @@ function calcUSDC() {
           : '閃兌無手續費 ✓';
       } else {
         noteEl.textContent = fee > 0
-          ? '手續費 ' + feeAmt.toFixed(2) + ' TWD（' + fee.toFixed(2) + '%）'
+          ? '手續費 ' + Math.round(feeAmt).toLocaleString('zh-TW') + ' TWD（' + fee.toFixed(2) + '%）'
           : '閃兌無手續費 ✓';
       }
     }
@@ -1251,7 +1252,7 @@ function calcBank() {
     
     const el = document.getElementById(id + '-usd');
     if (el) { 
-      el.textContent = result.toFixed(2); 
+      el.textContent = currentMode === 'buy' ? result.toFixed(2) : Math.round(result).toLocaleString('zh-TW'); 
       el.classList.remove('loading'); 
     }
     
@@ -1280,7 +1281,8 @@ function updateBest() {
       diffEl.textContent = '▲ 最優惠'; diffEl.className = 'result-diff positive';
     } else {
       const diff = v - bestVal;
-      diffEl.textContent = diff.toFixed(4) + ' ' + unit + ' (' + ((diff/bestVal)*100).toFixed(2) + '%)';
+      const formattedDiff = currentMode === 'buy' ? diff.toFixed(4) : Math.round(diff).toLocaleString('zh-TW');
+      diffEl.textContent = formattedDiff + ' ' + unit + ' (' + ((diff/bestVal)*100).toFixed(2) + '%)';
       diffEl.className = 'result-diff negative';
     }
   });
@@ -1346,7 +1348,7 @@ function updateSummary() {
           <span class="summary-tag ${e.tag === '銀行' ? 'bank' : 'exchange'}">${e.tag}</span>
         </div>
         <div class="summary-right">
-          <div class="summary-usdt">${e.amount.toFixed(2)} ${e.type}</div>
+          <div class="summary-usdt">${e.type === 'TWD' ? Math.round(e.amount).toLocaleString('zh-TW') : e.amount.toFixed(2)} ${e.type}</div>
           <div class="summary-rate">@ ${e.rate.toFixed(3)} (${e.rateTag}) · 費後淨額</div>
         </div>
       </div>`).join('');
@@ -1409,7 +1411,7 @@ function updateSummary() {
           <span class="summary-tag ${e.tag === '銀行' ? 'bank' : 'exchange'}">${e.tag}</span>
         </div>
         <div class="summary-right">
-          <div class="summary-usdt">${e.amount.toFixed(2)} ${e.type}</div>
+          <div class="summary-usdt">${e.type === 'TWD' ? Math.round(e.amount).toLocaleString('zh-TW') : e.amount.toFixed(2)} ${e.type}</div>
           <div class="summary-rate">@ ${e.rate.toFixed(3)} (${e.rateTag}) · 費後淨額</div>
         </div>
       </div>`).join('');
