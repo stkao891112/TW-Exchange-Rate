@@ -111,11 +111,12 @@ def fetch_next_bank():
         res = requests.post(url, headers=headers, json={}, verify=False, timeout=5)
         data = res.json()
         usd_item = next(item for item in data['data']['currencyList'] if item['currency'] == 'USD')
-        # buyRate: 銀行買入外幣（客戶賣出外幣換 TWD）
-        # sellRate: 銀行賣出外幣（客戶買入外幣）
+        # NEXT Bank API 中的命名為客戶視角：
+        # buyRate: 客戶買入美金價（銀行賣出 32.3190）
+        # sellRate: 客戶賣出美金價（銀行買入 32.1860）
         return {
-            "sell": float(usd_item.get('sellRate', usd_item['buyRate'])),  # 客戶買入美元匯率
-            "buy": float(usd_item['buyRate']),  # 客戶賣出美元匯率
+            "sell": float(usd_item['buyRate']),   # 銀行賣出價（高價 32.3190）
+            "buy": float(usd_item['sellRate']),   # 銀行買入價（低價 32.1860）
             "name": "NEXT Bank"
         }
     except Exception as e:
