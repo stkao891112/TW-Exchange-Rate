@@ -1472,34 +1472,40 @@ function setUpdateTime(s) {
   else { el.innerHTML = '<span class="dot error"></span>更新失敗'; }
 }
 
+let isFirstLoad = true;
+
 async function fetchAllRates() {
   document.getElementById('refreshBtn').classList.add('spin');
   setUpdateTime('loading');
-  ['max','bitopro','hoya'].forEach(id => {
-    const s = document.getElementById(id+'-rate-skel'); if(s){s.style.display='';s.classList.add('skel');}
-    const v = document.getElementById(id+'-rate'); if(v) v.style.display='none';
-    const u2 = document.getElementById(id+'-rate-unit'); if(u2) u2.style.display='none';
-    const u = document.getElementById(id+'-usdt'); if(u){u.textContent='---';u.classList.add('loading');}
-    const dot = document.getElementById(id+'-dot'); if(dot) dot.className = 'status-dot searching';
-    const st = document.getElementById(id+'-status'); if(st) st.textContent = '載入中';
-    const diff = document.getElementById(id+'-diff'); if(diff) diff.textContent = '';
-    
-    const s2 = document.getElementById(id+'-usdc-rate-skel'); if(s2){s2.style.display='';s2.classList.add('skel');}
-    const v2 = document.getElementById(id+'-usdc-rate'); if(v2) v2.style.display='none';
-    const u3 = document.getElementById(id+'-usdc-rate-unit'); if(u3) u3.style.display='none';
-    const u4 = document.getElementById(id+'-usdc'); if(u4){u4.textContent='---';u4.classList.add('loading');}
-    const dot2 = document.getElementById(id+'-usdc-dot'); if(dot2) dot2.className = 'status-dot searching';
-    const st2 = document.getElementById(id+'-usdc-status'); if(st2) st2.textContent = '載入中';
-  });
   
-  ['linebank','nextbank','cubank','sinopac','richart'].forEach(id => {
-    const s = document.getElementById(id+'-rate-skel'); if(s){s.style.display='';s.classList.add('skel');}
-    const v = document.getElementById(id+'-rate'); if(v) v.style.display='none';
-    const u2 = document.getElementById(id+'-rate-unit'); if(u2) u2.style.display='none';
-    const u = document.getElementById(id+'-usd'); if(u){u.textContent='---';u.classList.add('loading');}
-    const dot = document.getElementById(id+'-dot'); if(dot) dot.className = 'status-dot searching';
-    const st = document.getElementById(id+'-status'); if(st) st.textContent = '載入中';
-  });
+  // 只在首次載入時顯示骨架屏與重置數字，後續背景自動刷新時保留原數字不閃爍
+  if (isFirstLoad) {
+    ['max','bitopro','hoya'].forEach(id => {
+      const s = document.getElementById(id+'-rate-skel'); if(s){s.style.display='';s.classList.add('skel');}
+      const v = document.getElementById(id+'-rate'); if(v) v.style.display='none';
+      const u2 = document.getElementById(id+'-rate-unit'); if(u2) u2.style.display='none';
+      const u = document.getElementById(id+'-usdt'); if(u){u.textContent='---';u.classList.add('loading');}
+      const dot = document.getElementById(id+'-dot'); if(dot) dot.className = 'status-dot searching';
+      const st = document.getElementById(id+'-status'); if(st) st.textContent = '載入中';
+      const diff = document.getElementById(id+'-diff'); if(diff) diff.textContent = '';
+      
+      const s2 = document.getElementById(id+'-usdc-rate-skel'); if(s2){s2.style.display='';s2.classList.add('skel');}
+      const v2 = document.getElementById(id+'-usdc-rate'); if(v2) v2.style.display='none';
+      const u3 = document.getElementById(id+'-usdc-rate-unit'); if(u3) u3.style.display='none';
+      const u4 = document.getElementById(id+'-usdc'); if(u4){u4.textContent='---';u4.classList.add('loading');}
+      const dot2 = document.getElementById(id+'-usdc-dot'); if(dot2) dot2.className = 'status-dot searching';
+      const st2 = document.getElementById(id+'-usdc-status'); if(st2) st2.textContent = '載入中';
+    });
+    
+    ['linebank','nextbank','cubank','sinopac','richart'].forEach(id => {
+      const s = document.getElementById(id+'-rate-skel'); if(s){s.style.display='';s.classList.add('skel');}
+      const v = document.getElementById(id+'-rate'); if(v) v.style.display='none';
+      const u2 = document.getElementById(id+'-rate-unit'); if(u2) u2.style.display='none';
+      const u = document.getElementById(id+'-usd'); if(u){u.textContent='---';u.classList.add('loading');}
+      const dot = document.getElementById(id+'-dot'); if(dot) dot.className = 'status-dot searching';
+      const st = document.getElementById(id+'-status'); if(st) st.textContent = '載入中';
+    });
+  }
   
   try {
     const response = await fetch(API_BASE);
@@ -1573,6 +1579,7 @@ async function fetchAllRates() {
     
     // 所有數據加載完成後再進行計算
     recalcAll();
+    isFirstLoad = false;
     setUpdateTime('done');
   } catch (error) {
     console.error('❌ 取得匯率失敗:', error);
