@@ -1,0 +1,17 @@
+{
+  "name": "台灣匯率與電匯即時比價",
+  "short_name": "匯率比價",
+  "description": "即時比較台幣、美元、USDT、USDC 交易所與 5 大銀行電匯優惠匯率",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "icons": [
+    {
+      "src": "/static/app_icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
