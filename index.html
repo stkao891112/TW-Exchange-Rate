@@ -307,6 +307,9 @@
 <div class="bg-orb orb-3"></div>
 <div class="bg-orb orb-4"></div>
 
+<!-- 背景網格隨機流動雷射光束 Canvas -->
+<canvas id="grid-laser-canvas" style="position: fixed; inset: 0; pointer-events: none; z-index: 0; width: 100%; height: 100%;"></canvas>
+
 <div class="wrap">
   <div class="header">
     <div class="header-tag">USDT/USDC EXCHANGE AGGREGATOR</div>
@@ -1731,6 +1734,119 @@ if (document.readyState === 'loading') {
 } else {
   startAutoRefresh();
 }
+
+// 網格隨機雷射光線跑動 Canvas 動畫
+(function initGridLasers() {
+  const canvas = document.getElementById('grid-laser-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  let width, height;
+  const gridSize = 54; // 與背景網格 54px 對齊
+  let lasers = [];
+  
+  function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+  
+  class Laser {
+    constructor() {
+      this.reset();
+    }
+    
+    reset() {
+      this.dir = Math.random() < 0.5 ? 'h' : 'v';
+      if (this.dir === 'h') {
+        const gridY = Math.floor(Math.random() * Math.max(1, Math.floor(height / gridSize))) * gridSize;
+        this.y = gridY;
+        this.length = Math.random() * 140 + 90;
+        this.speed = (Math.random() * 3.5 + 2) * (Math.random() < 0.5 ? 1 : -1);
+        this.x = this.speed > 0 ? -this.length : width + this.length;
+      } else {
+        const gridX = Math.floor(Math.random() * Math.max(1, Math.floor(width / gridSize))) * gridSize;
+        this.x = gridX;
+        this.length = Math.random() * 140 + 90;
+        this.speed = (Math.random() * 3.5 + 2) * (Math.random() < 0.5 ? 1 : -1);
+        this.y = this.speed > 0 ? -this.length : height + this.length;
+      }
+      
+      const colors = [
+        { head: 'rgba(232, 255, 71, 0.95)', tail: 'rgba(232, 255, 71, 0)' },
+        { head: 'rgba(61, 255, 160, 0.95)', tail: 'rgba(61, 255, 160, 0)' },
+        { head: 'rgba(0, 229, 255, 0.95)', tail: 'rgba(0, 229, 255, 0)' },
+        { head: 'rgba(255, 255, 255, 0.9)', tail: 'rgba(255, 255, 255, 0)' }
+      ];
+      this.color = colors[Math.floor(Math.random() * colors.length)];
+    }
+    
+    update() {
+      if (this.dir === 'h') {
+        this.x += this.speed;
+        if ((this.speed > 0 && this.x - this.length > width) || (this.speed < 0 && this.x + this.length < 0)) {
+          this.reset();
+        }
+      } else {
+        this.y += this.speed;
+        if ((this.speed > 0 && this.y - this.length > height) || (this.speed < 0 && this.y + this.length < 0)) {
+          this.reset();
+        }
+      }
+    }
+    
+    draw() {
+      ctx.save();
+      let grad;
+      if (this.dir === 'h') {
+        const xTail = this.speed > 0 ? this.x - this.length : this.x + this.length;
+        grad = ctx.createLinearGradient(this.x, this.y, xTail, this.y);
+        grad.addColorStop(0, this.color.head);
+        grad.addColorStop(1, this.color.tail);
+        
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = this.color.head;
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(xTail, this.y);
+        ctx.stroke();
+      } else {
+        const yTail = this.speed > 0 ? this.y - this.length : this.y + this.length;
+        grad = ctx.createLinearGradient(this.x, this.y, this.x, yTail);
+        grad.addColorStop(0, this.color.head);
+        grad.addColorStop(1, this.color.tail);
+        
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = this.color.head;
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x, yTail);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+  
+  for (let i = 0; i < 16; i++) {
+    lasers.push(new Laser());
+  }
+  
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+    lasers.forEach(l => {
+      l.update();
+      l.draw();
+    });
+    requestAnimationFrame(animate);
+  }
+  
+  animate();
+})();
 </script>
 </body>
 </html>
